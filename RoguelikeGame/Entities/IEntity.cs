@@ -4,7 +4,7 @@ namespace RoguelikeGame.Creatures;
 
 public interface IEntity
 {
-    int Id { get; }
+    int ImageId { get; }
     Vector2 Position { get; set; }
 
     void Update();

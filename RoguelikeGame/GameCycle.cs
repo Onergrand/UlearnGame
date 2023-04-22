@@ -8,14 +8,12 @@ namespace RoguelikeGame;
 
 public class GameCycle : IGameModel
 {
-    private const int BasicSpeed = 2;
-    
     public event EventHandler<GameEventArgs> Updated;
-    
     public int PlayerId { get; set; }
-
     public Dictionary<int, IEntity> Entities { get; set; }
-
+    
+    private int _currentId;
+    private const int BasicSpeed = 5;
 
     public void MoveEnemies()
     {
@@ -25,19 +23,26 @@ public class GameCycle : IGameModel
     public void Initialize()
     {
         Entities = new Dictionary<int, IEntity>();
-        var player = new Player(0, new Vector2(200, 200), new Vector2(0,0));
-        
-        Entities.Add(player.Id, player);
-        PlayerId = player.Id;
+        var player = new Player(0, new Vector2(512-50, 384));
+        Entities.Add(_currentId, player);
+        PlayerId = player.ImageId;
+        _currentId++;
+
+        var x = new Enemy(0, new Vector2(400, 400));
+        Entities.Add(_currentId, x);
+        _currentId++;
+
     }
     
     public void Update()
     {
+        var playerInitPos = Entities[PlayerId].Position;
         foreach (var o in Entities.Values)
             o.Update();
         
+        var playerShift = Entities[PlayerId].Position - playerInitPos;
         
-        Updated(this, new GameEventArgs { Entities = Entities });                  
+        Updated(this, new GameEventArgs { Entities = Entities, POVShift = playerShift});                  
     }
 
     public void MovePlayer(Direction direction)
@@ -63,19 +68,19 @@ public class GameCycle : IGameModel
                 break;
             
             case Direction.NorthEast:
-                p.Speed += new Vector2(BasicSpeed, -BasicSpeed / 2);
+                p.Speed += new Vector2(BasicSpeed, -BasicSpeed / 2.0f);
                 break;
             
             case Direction.NorthWest:
-                p.Speed += new Vector2(-BasicSpeed, -BasicSpeed / 2);
+                p.Speed += new Vector2(-BasicSpeed, -BasicSpeed / 2.0f);
                 break;
             
             case Direction.SouthEast:
-                p.Speed += new Vector2(BasicSpeed, BasicSpeed / 2);
+                p.Speed += new Vector2(BasicSpeed, BasicSpeed / 2.0f);
                 break;
             
             case Direction.SouthWest:
-                p.Speed += new Vector2(-BasicSpeed, BasicSpeed / 2);
+                p.Speed += new Vector2(-BasicSpeed, BasicSpeed / 2.0f);
                 break;
         }
     }

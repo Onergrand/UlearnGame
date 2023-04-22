@@ -18,6 +18,7 @@ public class GameCycleView : Game, IGameView
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _playerImage;
+    private Vector2 _visualShift = new(0, 0);
 
     public GameCycleView()
     {
@@ -30,6 +31,10 @@ public class GameCycleView : Game, IGameView
     protected override void Initialize()
     {
         base.Initialize();
+        _graphics.IsFullScreen = false;
+        _graphics.PreferredBackBufferWidth = 1024;
+        _graphics.PreferredBackBufferHeight = 768;
+        _graphics.ApplyChanges();
     }
 
     protected override void LoadContent()
@@ -38,9 +43,10 @@ public class GameCycleView : Game, IGameView
         _textures.Add(0, Content.Load<Texture2D>("player"));
     }
     
-    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities)
+    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift)
     {
         _entities = entities;
+        _visualShift += POVShift;
     }
 
     protected override void Update(GameTime gameTime)
@@ -84,12 +90,16 @@ public class GameCycleView : Game, IGameView
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.Black);
+        GraphicsDevice.Clear(new Color(177, 180, 186));
         base.Draw(gameTime);
-        
         _spriteBatch.Begin();
+        
         foreach (var o in _entities.Values)
-            _spriteBatch.Draw(_textures[o.Id], o.Position, Color.White); 		
+        {
+            _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
+            
+        }
+
         _spriteBatch.End();            
     } 
 }

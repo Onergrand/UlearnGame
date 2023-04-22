@@ -4,22 +4,21 @@ namespace RoguelikeGame.Creatures;
 
 public class Enemy : ICreature
 {
-    public int Id { get; }
+    public int ImageId { get; }
     public Vector2 Position { get; set; }
     public Vector2 Speed { get; set; }
     public int HealthPoints { get; set; }
     
-    public Enemy(int id, Vector2 position, Vector2 speed, int healthPoints = 500)
+    public Enemy(int imageId, Vector2 position, int healthPoints = 500)
     {
-        Id = id;
+        ImageId = imageId;
         HealthPoints = healthPoints;
         Position = position;
-        Speed = speed;
+        Speed = Position;
     }
     
     public void Update()
     {
-        throw new System.NotImplementedException();
     }
     
     public void Attack()

@@ -20,4 +20,5 @@ public interface IGameModel
 public class GameEventArgs : EventArgs
 {
     public Dictionary<int, IEntity> Entities { get; set; }    
+    public Vector2 POVShift { get; set; }
 }
