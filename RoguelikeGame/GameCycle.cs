@@ -15,7 +15,7 @@ public class GameCycle : IGameModel
     public Dictionary<int, IEntity> Entities { get; set; }
     
     private int _currentId;
-    private const int BasicSpeed = 5;
+    private const int BasicSpeed = 7;
 
     public void MoveEnemies()
     {
@@ -26,7 +26,7 @@ public class GameCycle : IGameModel
     {
         Entities = new Dictionary<int, IEntity>();
 
-        UpdateEntities();
+        CreateLevel();
 
         var x = new Enemy(0, new Vector2(400, 400));
         Entities.Add(_currentId, x);
@@ -41,7 +41,7 @@ public class GameCycle : IGameModel
 
     }
 
-    private void UpdateEntities()
+    private void CreateLevel()
     {
         var level = new Level(6);
         for (var i = 0; i < level.Map.GetLength(0); i++)
@@ -74,9 +74,26 @@ public class GameCycle : IGameModel
     public void Update()
     {
         var playerInitPos = Entities[PlayerId].Position;
-        foreach (var o in Entities.Values)
-            o.Update();
+        var player = (Player)Entities[PlayerId];
         
+        foreach (var entity in Entities.Values.Except(new[] { Entities[PlayerId] }))
+        {
+            entity.Update();
+            if (entity is ISolid solid)
+            {
+                if (RectangleCollider.IsCollided(solid.Collider, player.Collider))
+                {
+                    var speed = player.Speed;
+                    var pos = player.Position;
+                    var currentSpeed = speed - pos;
+                    
+                    player.Position = pos - currentSpeed;
+                    player.Speed -= 1.1f * currentSpeed;
+                }
+            }
+        }
+        
+        player.Update();
         var playerShift = Entities[PlayerId].Position - playerInitPos;
         
         Updated(this, new GameEventArgs { Entities = Entities, POVShift = playerShift});                  
