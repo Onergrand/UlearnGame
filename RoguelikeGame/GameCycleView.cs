@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RoguelikeGame.Creatures;
+using RoguelikeGame.LevelGeneration;
 
 namespace RoguelikeGame;
 
@@ -18,7 +19,9 @@ public class GameCycleView : Game, IGameView
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _playerImage;
-    private Vector2 _visualShift = new(0, 0);
+    private Vector2 _visualShift = new(
+        Level.InitialPos.X * Level.TileSize - 300,
+        Level.InitialPos.Y * Level.TileSize - 250);
 
     public GameCycleView()
     {
@@ -32,8 +35,8 @@ public class GameCycleView : Game, IGameView
     {
         base.Initialize();
         _graphics.IsFullScreen = false;
-        _graphics.PreferredBackBufferWidth = 1024;
-        _graphics.PreferredBackBufferHeight = 768;
+        _graphics.PreferredBackBufferWidth = 600;
+        _graphics.PreferredBackBufferHeight = 500;
         _graphics.ApplyChanges();
     }
 
@@ -41,6 +44,8 @@ public class GameCycleView : Game, IGameView
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _textures.Add(0, Content.Load<Texture2D>("player"));
+        _textures.Add(1, Content.Load<Texture2D>("floorBlock"));
+        _textures.Add(2, Content.Load<Texture2D>("wallBlock"));
     }
     
     public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift)
@@ -97,7 +102,6 @@ public class GameCycleView : Game, IGameView
         foreach (var o in _entities.Values)
         {
             _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
-            
         }
 
         _spriteBatch.End();            

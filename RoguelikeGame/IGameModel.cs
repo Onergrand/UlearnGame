@@ -7,13 +7,12 @@ namespace RoguelikeGame;
 
 public interface IGameModel
 {
-    int PlayerId { get; set; }
+    Player Player { get; set; }
     Dictionary<int, IEntity> Entities { get; set; }
     event EventHandler<GameEventArgs> Updated;
 
     void Update();
     void MovePlayer(Direction direction);
-    void MoveEnemies();
     void Initialize();
 }
 
