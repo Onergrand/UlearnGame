@@ -10,6 +10,8 @@ public class Player : ICreature, ISolid
     public Vector2 Position { get; set; }
     public Vector2 Speed { get; set; }
 
+    public Direction Direction;
+
 
     public Player(int imageId, Vector2 position, int healthPoints = 500)
     {
@@ -17,7 +19,7 @@ public class Player : ICreature, ISolid
         HealthPoints = healthPoints;
         Position = position;
         Speed = Position;
-        Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
+        Collider = new RectangleCollider((int)Speed.X, (int)Speed.Y, 50, 50);
     }
 
     public void Update()
@@ -32,6 +34,6 @@ public class Player : ICreature, ISolid
     }
     public void MoveCollider(Vector2 newPos)
     {
-        Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
+        Collider = new RectangleCollider((int)Speed.X, (int)Speed.Y, 50, 50);
     }
 }

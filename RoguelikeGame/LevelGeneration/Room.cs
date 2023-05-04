@@ -2,19 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 
 namespace RoguelikeGame.LevelGeneration;
 
+public delegate void OutRoomBoundsDelegate();
+
 public class Room
 {
-    public Point TopLeftCorner { get; }
-    public int _roomsLeft { get; }
-    public Dictionary<Direction, Room> Neighbours;
+    public event OutRoomBoundsDelegate PlayerIsOutsideRoom;
     
-    private List<Direction> _possibleDirections = new() { Direction.North, Direction.East, Direction.West, Direction.South };
-
     public int Length { get; }
     public int Breadth { get; }
+    public Point TopLeftCorner { get; }
+    public int RoomsLeft { get; }
+    //public readonly  RoomMap
+    public readonly Dictionary<Direction, Room> Neighbours;
+    
+    private readonly List<Direction> _possibleDirections = new() { Direction.North, Direction.East, Direction.West, Direction.South };
 
     public Room(Point topLeftCorner, int length, int breadth, int roomsLeft)
     {
@@ -22,15 +27,15 @@ public class Room
         Neighbours = new Dictionary<Direction, Room>();
         Length = length;
         Breadth = breadth;
-        _roomsLeft = roomsLeft;
+        RoomsLeft = roomsLeft;
     }
-    
-    public Room(Point topLeftCorner, Dictionary<Direction, Room> neighbours, int length, int breadth, int roomsLeft)
+
+    private Room(Point topLeftCorner, Dictionary<Direction, Room> neighbours, int length, int breadth, int roomsLeft)
     {
         TopLeftCorner = topLeftCorner;
         Length = length;
         Breadth = breadth;
-        _roomsLeft = roomsLeft;
+        RoomsLeft = roomsLeft;
         
         Neighbours = neighbours;
         _possibleDirections = _possibleDirections.Except(Neighbours.Keys).ToList();
@@ -39,7 +44,7 @@ public class Room
     public void CreateNeighbours()
     {
         var rnd = new Random();
-        var roomsAmount = rnd.Next(0, _roomsLeft > _possibleDirections.Count ? _possibleDirections.Count : _roomsLeft);
+        var roomsAmount = rnd.Next(0, RoomsLeft > _possibleDirections.Count ? _possibleDirections.Count : RoomsLeft);
 
         for (var i = 0; i < roomsAmount; i++)
         {
@@ -68,22 +73,32 @@ public class Room
                     break;
             }
 
-            var dict = new Dictionary<Direction, Room>();
-            dict[GetOppositeDirection(neighbourDirection)] = this;
+            var dict = new Dictionary<Direction, Room> { [neighbourDirection.OppositeDirection()] = this };
             
-            Neighbours[neighbourDirection] = new Room(nextPoint, dict, Length, Breadth, _roomsLeft - roomsAmount);
+
+            Neighbours[neighbourDirection] = new Room(nextPoint, dict, Length, Breadth, RoomsLeft - roomsAmount);
         }
     }
-
-    private Direction GetOppositeDirection(Direction direction)
+    
+    public bool IsPositionInRoomBounds(Vector2 position)
     {
-        return direction switch
-        {
-            Direction.North => Direction.South,
-            Direction.West => Direction.East,
-            Direction.East => Direction.West,
-            Direction.South => Direction.North
-        };
-    }
+        var room = this;
+        var topLeft = new Vector2((room.TopLeftCorner.X - 1) * 50, (room.TopLeftCorner.Y - 1) * 50);
+        var bottomRight = new Vector2(topLeft.X + (room.Length + 1) * 50, topLeft.Y + (room.Breadth + 1) * 50);
 
+        if (position.X < topLeft.X || position.Y < topLeft.Y || position.X > bottomRight.X || position.Y > bottomRight.Y) 
+            return false;
+        
+        return true;
+    }
+    
+    public void IsPlayerInRoomBounds(Vector2 position)
+    {
+        var room = this;
+        var topLeft = new Vector2((room.TopLeftCorner.X - 1) * 50, (room.TopLeftCorner.Y - 1) * 50);
+        var bottomRight = new Vector2(topLeft.X + (room.Length + 1) * 50, topLeft.Y + (room.Breadth + 1) * 50);
+
+        if (position.X < topLeft.X || position.Y < topLeft.Y || position.X > bottomRight.X || position.Y > bottomRight.Y)
+            PlayerIsOutsideRoom!();
+    }
 }

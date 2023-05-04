@@ -20,8 +20,8 @@ public class GameCycleView : Game, IGameView
     private SpriteBatch _spriteBatch;
     private Texture2D _playerImage;
     private Vector2 _visualShift = new(
-        Level.InitialPos.X * Level.TileSize - 512,
-        Level.InitialPos.Y * Level.TileSize - 384);
+        Level.InitialPos.X * Level.TileSize - 300,
+        Level.InitialPos.Y * Level.TileSize - 250);
 
     public GameCycleView()
     {
@@ -35,8 +35,8 @@ public class GameCycleView : Game, IGameView
     {
         base.Initialize();
         _graphics.IsFullScreen = false;
-        _graphics.PreferredBackBufferWidth = 1024;
-        _graphics.PreferredBackBufferHeight = 768;
+        _graphics.PreferredBackBufferWidth = 600;
+        _graphics.PreferredBackBufferHeight = 500;
         _graphics.ApplyChanges();
     }
 
