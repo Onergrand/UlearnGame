@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using RoguelikeGame.Creatures;
 
-namespace RoguelikeGame.Creatures;
+namespace RoguelikeGame.Entities.Creatures;
 
 public class Player : ICreature, ISolid
 {

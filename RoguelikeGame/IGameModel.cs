@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using RoguelikeGame.Creatures;
+using RoguelikeGame.Entities.Creatures;
 
 namespace RoguelikeGame;
 
@@ -13,6 +14,7 @@ public interface IGameModel
 
     void Update();
     void MovePlayer(Direction direction);
+    void MakePlayerAttack();
     void Initialize();
 }
 

@@ -15,6 +15,7 @@ public class GamePresenter
         _gameModel.Updated += ModelViewUpdate;
         _gameView.CycleFinished += ViewModelUpdate;
         _gameView.PlayerMoved += ViewModelMovePlayer;
+        _gameView.PlayerAttacked += ViewModelMakePlayerAttack;
         
         _gameModel.Initialize();
     }
@@ -32,6 +33,11 @@ public class GamePresenter
     private void ViewModelMovePlayer(object sender, ControlsEventArgs e)
     {
         _gameModel.MovePlayer(e.Direction);
+    }
+    
+    private void ViewModelMakePlayerAttack(object sender, EventArgs e)
+    {
+        _gameModel.MakePlayerAttack();
     }
 
     private void ModelViewUpdate(object sender, GameEventArgs e)

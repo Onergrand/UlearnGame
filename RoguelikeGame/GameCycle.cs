@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using RoguelikeGame.Creatures;
 using RoguelikeGame.Creatures.Objects;
+using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.LevelGeneration;
 
 namespace RoguelikeGame;
@@ -64,6 +65,13 @@ public class GameCycle : IGameModel
                         Entities.Add(_currentId, new Wall(2, pos));
                         _currentId++;
                         break;
+                    
+                    case RoomObjects.Monster:
+                        Entities.Add(_currentId, new Floor(1, pos));
+                        _currentId++;
+                        Entities.Add(_currentId, new Enemy(3, pos));
+                        _currentId++;
+                        break;
                 
                     case RoomObjects.Floor:
                     case RoomObjects.Player:
@@ -76,7 +84,7 @@ public class GameCycle : IGameModel
         }
     }
 
-    private void ChangeCurrentRoomIfExited() // Проверить нужно ли каждый раз подписывать _currentRoom на ChangeCurrentRoomIfExited
+    private void ChangeCurrentRoomIfExited()
     {
         var previousRoom = _currentRoom;
         foreach (var neighbour in _currentRoom.Neighbours.Values)
@@ -99,8 +107,6 @@ public class GameCycle : IGameModel
     
     public void Update()
     {
-        var playerInitPos = Player.Position;
-
         _currentRoom.IsPlayerInRoomBounds(Player.Position);
 
         var currentEntities = Entities
@@ -108,6 +114,13 @@ public class GameCycle : IGameModel
             .Except(new[] { Player })
             .Where(entity => _currentRoom.IsPositionInRoomBounds(entity.Position) && entity is ISolid);
         
+        var currentEntitiesWithKeys = Entities
+            .Where(entity => 
+                _currentRoom.IsPositionInRoomBounds(entity.Value.Position) && 
+                entity.Value is ISolid and not RoguelikeGame.Entities.Creatures.Player)
+            .ToDictionary(x => x.Key, y => y.Value);
+
+        CheckBulletCollision(currentEntitiesWithKeys);
         CheckCollision(currentEntities);
 
         var playerShift = _currentPOV;
@@ -123,6 +136,9 @@ public class GameCycle : IGameModel
         Player.Update();
         foreach (var entity in currentEntities)
         {
+            if (entity is Enemy monster)
+                monster.MoveToPlayer(Player.Position);
+                    
             entity.Update();
             var solid = entity as ISolid;
 
@@ -137,6 +153,24 @@ public class GameCycle : IGameModel
                         player.Speed = new Vector2(playerInitPos.X, player.Position.Y);
                     Player.Update();
                 }
+            }
+        }
+    }
+
+    private void CheckBulletCollision(Dictionary<int,IEntity> currentEntities)
+    {
+        var bullets = currentEntities
+            .Where(x => x.Value is Bullet)
+            .ToDictionary(x => x.Key, y => y.Value);
+        
+        foreach (var bulletKeyValuePair in bullets)
+        {
+            var id = bulletKeyValuePair.Key;
+            var bullet = bulletKeyValuePair.Value as Bullet;
+            foreach (var entity in currentEntities.Select(x => x.Value).Except(bullets.Values).OfType<ISolid>())
+            {
+                if (RectangleCollider.IsCollided(entity.Collider, bullet!.Collider))
+                    Entities.Remove(id);
             }
         }
     }
@@ -167,24 +201,37 @@ public class GameCycle : IGameModel
             
             case Direction.NorthEast:
                 Player.Speed += new Vector2(BasicSpeed, -BasicSpeed / 2.0f);
-                Player.Direction = Direction.NorthEast;
                 break;
             
             case Direction.NorthWest:
                 Player.Speed += new Vector2(-BasicSpeed, -BasicSpeed / 2.0f);
-                Player.Direction = Direction.NorthWest;
                 break;
             
             case Direction.SouthEast:
                 Player.Speed += new Vector2(BasicSpeed, BasicSpeed / 2.0f);
-                Player.Direction = Direction.SouthEast;
                 break;
             
             case Direction.SouthWest:
                 Player.Speed += new Vector2(-BasicSpeed, BasicSpeed / 2.0f);
-                Player.Direction = Direction.SouthWest;
                 break;
         }
+    }
 
+    public void MakePlayerAttack()
+    {
+        var attackDirection = Player.Direction;
+        var playerPosition = Player.Position;
+
+        var bulletStartPosition = attackDirection switch
+        {
+            Direction.North => new Vector2(playerPosition.X + 25, playerPosition.Y - 20),
+            Direction.East => new Vector2(playerPosition.X + 50, playerPosition.Y + 25),
+            Direction.West => new Vector2(playerPosition.X - 20, playerPosition.Y + 25),
+            Direction.South => new Vector2(playerPosition.X + 25, playerPosition.Y + 50)
+        };
+
+        var bullet = new Bullet(4, bulletStartPosition, attackDirection.ConvertToVector() * 2);
+        Entities.Add(_currentId, bullet);
+        _currentId++;
     }
 }
