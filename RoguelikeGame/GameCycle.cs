@@ -17,8 +17,8 @@ public class GameCycle : IGameModel
     private Level _level;
     private Room _currentRoom;
     private int _currentId;
+    private Vector2 _currentPOV = new(0,0);
     private const int BasicSpeed = 6;
-
 
     public void Initialize()
     {
@@ -89,6 +89,9 @@ public class GameCycle : IGameModel
         }
         if (previousRoom == _currentRoom)
             throw new ArgumentOutOfRangeException($"Player is outside the map bounds");
+
+        var delta = _currentRoom.TopLeftCorner - previousRoom.TopLeftCorner;
+        _currentPOV = new Vector2(delta.X * Level.TileSize, delta.Y * Level.TileSize);
         
         previousRoom.PlayerIsOutsideRoom -= ChangeCurrentRoomIfExited;
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
@@ -106,8 +109,9 @@ public class GameCycle : IGameModel
             .Where(entity => _currentRoom.IsPositionInRoomBounds(entity.Position) && entity is ISolid);
         
         CheckCollision(currentEntities);
-        
-        var playerShift = Player.Position - playerInitPos;
+
+        var playerShift = _currentPOV;
+        _currentPOV = new Vector2(0, 0);
         
         Updated!(this, new GameEventArgs { Entities = Entities, POVShift = playerShift});                  
     }
