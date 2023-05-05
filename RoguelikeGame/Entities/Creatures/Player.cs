@@ -32,6 +32,7 @@ public class Player : ICreature, ISolid
     {
         
     }
+    
     public void MoveCollider(Vector2 newPos)
     {
         Collider = new RectangleCollider((int)Speed.X, (int)Speed.Y, 50, 50);

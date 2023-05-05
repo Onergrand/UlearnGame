@@ -20,8 +20,8 @@ public class GameCycleView : Game, IGameView
     private SpriteBatch _spriteBatch;
     private Texture2D _playerImage;
     private Vector2 _visualShift = new(
-        Level.InitialPos.X * Level.TileSize - 300,
-        Level.InitialPos.Y * Level.TileSize - 250);
+        Level.InitialPos.X * Level.TileSize - 50,
+        Level.InitialPos.Y * Level.TileSize - 50);
 
     public GameCycleView()
     {
