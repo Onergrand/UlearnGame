@@ -6,20 +6,24 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RoguelikeGame.Creatures;
 using RoguelikeGame.Creatures.Objects;
-using RoguelikeGame.LevelGeneration;
+using RoguelikeGame.Entities;
+using RoguelikeGame.Entities.Objects;
+using RoguelikeGame.GameModel;
+using RoguelikeGame.GameModel.LevelGeneration;
 
-namespace RoguelikeGame;
+namespace RoguelikeGame.GameView;
+
 
 public class GameCycleView : Game, IGameView
 {
     public event EventHandler CycleFinished;
     public event EventHandler<ControlsEventArgs> PlayerMoved;
-    public event EventHandler PlayerAttacked;
+    public event EventHandler<ControlsEventArgs> PlayerAttacked;
     
     private Dictionary<int, IEntity> _entities = new();
-    private Dictionary<int, Texture2D> _textures = new();
+    private readonly Dictionary<int, Texture2D> _textures = new();
     
-    private GraphicsDeviceManager _graphics;
+    private readonly GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
     private Vector2 _visualShift = new(
@@ -31,7 +35,7 @@ public class GameCycleView : Game, IGameView
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         
-        IsMouseVisible = true;
+        IsMouseVisible = false;
     }
 
     protected override void Initialize()
@@ -51,6 +55,7 @@ public class GameCycleView : Game, IGameView
         _textures.Add(2, Content.Load<Texture2D>("wallBlock"));
         _textures.Add(3, Content.Load<Texture2D>("monster"));
         _textures.Add(4, Content.Load<Texture2D>("playerBullet"));
+        _textures.Add(5, Content.Load<Texture2D>("monsterBullet"));
     }
     
     public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift)
@@ -63,40 +68,43 @@ public class GameCycleView : Game, IGameView
     {
         var keysState = Keyboard.GetState();
         var pressedKeys = keysState.GetPressedKeys();
-        if (pressedKeys.Length > 0)
-        {
 
-            if (keysState.IsKeyDown(Keys.W) && keysState.IsKeyDown(Keys.A))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.NorthWest });
+        foreach (var key in pressedKeys)
+        {
+            switch (key)
+            {
+                case Keys.W:
+                    PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.North });
+                    break;
+                case Keys.S:
+                    PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.South });
+                    break;
+                case Keys.D:
+                    PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.East });
+                    break;
+                case Keys.A:
+                    PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.West });
+                    break;
                 
-            else if (keysState.IsKeyDown(Keys.W) && keysState.IsKeyDown(Keys.D))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.NorthEast });
+                case Keys.Up:
+                    PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.North });
+                    break;
+                case Keys.Right:
+                    PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.East });
+                    break;
+                case Keys.Left:
+                    PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.West });
+                    break;
+                case Keys.Down:
+                    PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.South });
+                    break;
                 
-            else if (keysState.IsKeyDown(Keys.S) && keysState.IsKeyDown(Keys.D))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.SouthEast });
-                
-            else if (keysState.IsKeyDown(Keys.S) && keysState.IsKeyDown(Keys.A))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.SouthWest });
-            
-            else if (keysState.IsKeyDown(Keys.W))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.North });
-                
-            else if (keysState.IsKeyDown(Keys.S))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.South });
-                
-            else if (keysState.IsKeyDown(Keys.D))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.East });
-                
-            else if (keysState.IsKeyDown(Keys.A))
-                PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.West });
-                
-            else if (keysState.IsKeyDown(Keys.Escape)) 
-                Exit();
+                case Keys.Escape:
+                        Exit();
+                    break;
+            }
         }
         
-        if (keysState.IsKeyDown(Keys.Space))
-            PlayerAttacked!(this, EventArgs.Empty);
-
         base.Update(gameTime);
         CycleFinished!(this, EventArgs.Empty);
     }

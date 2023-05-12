@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace RoguelikeGame;
+namespace RoguelikeGame.GameModel;
 
 public enum Direction : byte
 {

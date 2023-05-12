@@ -1,4 +1,6 @@
 ﻿using System;
+using RoguelikeGame.GameModel;
+using RoguelikeGame.GameView;
 
 namespace RoguelikeGame;
 
@@ -35,9 +37,9 @@ public class GamePresenter
         _gameModel.MovePlayer(e.Direction);
     }
     
-    private void ViewModelMakePlayerAttack(object sender, EventArgs e)
+    private void ViewModelMakePlayerAttack(object sender, ControlsEventArgs e)
     {
-        _gameModel.MakePlayerAttack();
+        _gameModel.MakePlayerAttack(e.Direction);
     }
 
     private void ModelViewUpdate(object sender, GameEventArgs e)

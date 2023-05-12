@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using RoguelikeGame.Creatures;
 
-namespace RoguelikeGame.Creatures.Objects;
+namespace RoguelikeGame.Entities.Objects;
 
 public class Floor : IEntity
 {

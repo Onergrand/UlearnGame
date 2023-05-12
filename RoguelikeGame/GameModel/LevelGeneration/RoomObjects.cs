@@ -1,4 +1,4 @@
-﻿namespace RoguelikeGame.LevelGeneration;
+﻿namespace RoguelikeGame.GameModel.LevelGeneration;
 
 public enum RoomObjects
 {

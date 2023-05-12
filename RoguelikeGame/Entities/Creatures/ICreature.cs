@@ -1,10 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+﻿using RoguelikeGame.Creatures;
 
-namespace RoguelikeGame.Creatures;
+namespace RoguelikeGame.Entities.Creatures;
 
-public interface ICreature : IEntity
+public interface ICreature : IEntity, ISolid
 {
     int HealthPoints { get; set; }
+    int Damage { get; set; }
+    int ArmorPoints { get; set; }
 
-    void Attack();
+    void ApplyDamage(int damage);
 }

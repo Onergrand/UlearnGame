@@ -1,19 +1,26 @@
 ﻿using Microsoft.Xna.Framework;
+using RoguelikeGame.Entities;
+using RoguelikeGame.Entities.Objects;
 
 namespace RoguelikeGame.Creatures.Objects;
 
-public class Bullet : IEntity, ISolid
+public class Bullet : IMissile, ISolid
 {
     public int ImageId { get; }
+    
     public RectangleCollider Collider { get; set; }
+    
+    public int Damage { get; set; }
+    
     public Vector2 Position { get; set; }
     public Vector2 Speed { get; set; }
 
-    public Bullet(int imageId, Vector2 position, Vector2 speed)
+    public Bullet(int imageId, Vector2 position, Vector2 speed, int damage)
     {
         ImageId = imageId;
         Position = position;
         Speed = speed;
+        Damage = damage;
         Collider = new RectangleCollider((int)position.X, (int)position.Y, 20, 20);
     }
     

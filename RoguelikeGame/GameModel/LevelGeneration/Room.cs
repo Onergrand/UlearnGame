@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 
-namespace RoguelikeGame.LevelGeneration;
+namespace RoguelikeGame.GameModel.LevelGeneration;
 
 public delegate void OutRoomBoundsDelegate();
 
@@ -41,7 +40,7 @@ public class Room
         _possibleDirections = _possibleDirections.Except(Neighbours.Keys).ToList();
     }
 
-    public void CreateNeighbours()
+    public void CreateNeighbours(Level level)
     {
         var rnd = new Random();
         var roomsAmount = rnd.Next(0, RoomsLeft > _possibleDirections.Count ? _possibleDirections.Count : RoomsLeft);
@@ -72,6 +71,8 @@ public class Room
                     nextPoint += new Point(0, Breadth);
                     break;
             }
+            if (level.Rooms.Select(x => x.TopLeftCorner).Contains(nextPoint))
+                continue;
 
             var dict = new Dictionary<Direction, Room> { [neighbourDirection.OppositeDirection()] = this };
             
@@ -83,8 +84,8 @@ public class Room
     public bool IsPositionInRoomBounds(Vector2 position)
     {
         var room = this;
-        var topLeft = new Vector2((room.TopLeftCorner.X - 1) * 50, (room.TopLeftCorner.Y - 1) * 50);
-        var bottomRight = new Vector2(topLeft.X + (room.Length + 1) * 50, topLeft.Y + (room.Breadth + 1) * 50);
+        var topLeft = new Vector2((room.TopLeftCorner.X - 1.4f) * 50, (room.TopLeftCorner.Y - 1.4f) * 50);
+        var bottomRight = new Vector2(topLeft.X + room.Length * 56, topLeft.Y + room.Breadth * 56);
 
         if (position.X < topLeft.X || position.Y < topLeft.Y || position.X > bottomRight.X || position.Y > bottomRight.Y) 
             return false;

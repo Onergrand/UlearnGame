@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using RoguelikeGame.Entities.Objects;
 
-namespace RoguelikeGame.Creatures;
+namespace RoguelikeGame.Entities;
 
 public interface ISolid
 {
