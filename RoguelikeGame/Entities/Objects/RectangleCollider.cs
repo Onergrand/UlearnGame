@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace RoguelikeGame.Creatures;
+namespace RoguelikeGame.Entities.Objects;
 
 public class RectangleCollider
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using RoguelikeGame.Creatures;
 
-namespace RoguelikeGame.Creatures.Objects;
+namespace RoguelikeGame.Entities.Objects;
 
 public class Wall : IEntity, ISolid
 {
@@ -13,11 +14,12 @@ public class Wall : IEntity, ISolid
     {
         ImageId = imageId;
         Position = position;
-        Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 48, 48);
+        Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
     }
     
     public void MoveCollider(Vector2 newPos)
     {
+        Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
     }
     
     public void Update()

@@ -1,5 +1,7 @@
 ﻿using System;
 using RoguelikeGame;
+using RoguelikeGame.GameModel;
+using RoguelikeGame.GameView;
 
 public static class Program
 {
