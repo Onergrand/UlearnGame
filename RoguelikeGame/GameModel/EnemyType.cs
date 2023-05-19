@@ -56,7 +56,7 @@ public class EnemyType
     
     public static void SpikeAttack(Enemy enemy, Dictionary<int, IEntity> entities)
     {
-        if ((DateTime.Now - enemy.LastShotTime).Milliseconds < 1500)
+        if ((DateTime.Now - enemy.LastShotTime).Seconds < 1)
             return;
         
         enemy.LastShotTime = DateTime.Now;

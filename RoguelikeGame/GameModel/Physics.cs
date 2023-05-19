@@ -33,45 +33,76 @@ public partial class GameCycle
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
     }
     
+    public void Update()
+    {
+        _currentRoom.IsPlayerInRoomBounds(Player.Position);
+
+        var currentEntities = Entities
+            .Values
+            .Where(entity => _currentRoom.IsPositionInRoomBounds(entity.Position) && entity is ISolid);
+        
+        var currentEntitiesWithKeys = Entities
+            .Where(entity => 
+                _currentRoom.IsPositionInRoomBounds(entity.Value.Position) && 
+                entity.Value is ISolid)
+            .ToDictionary(x => x.Key, y => y.Value);
+
+        CheckBulletsCollision(currentEntitiesWithKeys);
+        CheckCollision(currentEntities);
+
+        var playerShift = _currentPov;
+        _currentPov = new Vector2(0, 0);
+        
+        Updated!(this, new GameEventArgs { Entities = Entities, POVShift = playerShift});                  
+    }
+    
     private void CheckCollision(IEnumerable<IEntity> currentEntities)
     {
+        _lastKnownPlayerSpeed = Player.Speed;
         var enumerable = currentEntities.ToArray();
         var entities = enumerable.Where(x => x is not RoguelikeGame.Entities.Creatures.Player).ToArray();
         var creatures = enumerable.Where(x => x is ICreature).Select(x => ((ICreature)x, x.Position)).ToArray();
+
+        foreach (var creature in creatures)
+        {
+            if (creature.Item1 is Enemy monster)
+            {
+                monster.MoveToPlayer(Player.Position);
+                monster.Attack(Player.Position, Entities);
+            }
+            creature.Item1.Update();
+        }
         Player.Update();
 
         foreach (var entity in entities)
         {
             entity.Update();
-            var solid = entity as ISolid;
 
-            if (entity is Enemy monster)
-            {
-                monster.Attack(Player.Position, Entities);
-                monster.MoveToPlayer(Player.Position);
-            }
-
-            foreach (var creaturePair in creatures)
-            {
-                var creature = creaturePair.Item1;
-                var creatureInitPos = creaturePair.Position;
-                if (RectangleCollider.IsCollided(solid!.Collider, creature.Collider))
-                {
-                    if (creatureInitPos != creature.Speed)
-                    {
-                        var intersects = Rectangle.Intersect(creature.Collider.Boundary, solid.Collider.Boundary);
-                        if (intersects.Width > intersects.Height)
-                            creature.Speed = new Vector2(creature.Position.X, creatureInitPos.Y);
-                        else if (intersects.Width < intersects.Height)
-                            creature.Speed = new Vector2(creatureInitPos.X, creature.Position.Y);
-                        creature.Update();
-                    }
-                }   
-            }
+            foreach (var (creature, creatureInitialPos) in creatures)
+                CheckCreatureCollision(entity, creature, creatureInitialPos);
         }
     }
 
-    private void CheckBulletCollision(Dictionary<int,IEntity> currentEntities)
+    private static void CheckCreatureCollision(IEntity entity, ICreature creature, Vector2 creatureInitialPos)
+    {
+        if (entity.Equals(creature)) return;
+
+        var solid = entity as ISolid;
+        
+        if (!RectangleCollider.IsCollided(solid!.Collider, creature.Collider)) return;
+        if (creatureInitialPos == creature.Position)
+            return;
+        
+        var intersects = Rectangle.Intersect(creature.Collider.Boundary, solid.Collider.Boundary);
+        if (intersects.Width >= intersects.Height)
+            creature.Position = new Vector2(creature.Position.X, creatureInitialPos.Y);
+        else if (intersects.Width < intersects.Height)
+            creature.Position = new Vector2(creatureInitialPos.X, creature.Position.Y);
+        
+        creature.Update();
+    }
+
+    private void CheckBulletsCollision(Dictionary<int,IEntity> currentEntities)
     {
         var bullets = currentEntities
             .Where(x => x.Value is Bullet)

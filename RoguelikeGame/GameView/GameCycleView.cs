@@ -35,7 +35,7 @@ public class GameCycleView : Game, IGameView
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         
-        IsMouseVisible = false;
+        IsMouseVisible = true;
     }
 
     protected override void Initialize()
@@ -119,7 +119,11 @@ public class GameCycleView : Game, IGameView
         foreach (var o in floor)
             _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
         
+        var walls = _entities.Values.Where(x => x is Wall);
         foreach (var o in _entities.Values.Except(floor))
+            _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
+        
+        foreach (var o in _entities.Values.Except(floor).Except(walls))
             _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
 
         _spriteBatch.End();            

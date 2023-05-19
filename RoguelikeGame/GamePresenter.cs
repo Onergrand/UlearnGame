@@ -6,8 +6,8 @@ namespace RoguelikeGame;
 
 public class GamePresenter
 {
-    private IGameView _gameView;
-    private IGameModel _gameModel;
+    private readonly IGameView _gameView;
+    private readonly IGameModel _gameModel;
 
     public GamePresenter(IGameView gameView, IGameModel gameModel)
     {
@@ -16,9 +16,9 @@ public class GamePresenter
 
         _gameModel.Updated += ModelViewUpdate;
         _gameView.CycleFinished += ViewModelUpdate;
-        _gameView.PlayerMoved += ViewModelMovePlayer;
         _gameView.PlayerAttacked += ViewModelMakePlayerAttack;
-        
+        _gameView.PlayerMoved += ViewModelMovePlayer;
+
         _gameModel.Initialize();
     }
 

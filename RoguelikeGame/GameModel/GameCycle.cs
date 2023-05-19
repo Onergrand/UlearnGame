@@ -19,7 +19,9 @@ public partial class GameCycle : IGameModel
     private Level _level;
     private Room _currentRoom;
     private int _currentId;
+    private Vector2 _lastKnownPlayerSpeed;
     private Vector2 _currentPov = new(0,0);
+    
     private const int BasicSpeed = 4;
 
     public void Initialize()
@@ -42,7 +44,6 @@ public partial class GameCycle : IGameModel
         var level = new Level(7);
 
         _level = level;
-        var x = level.Rooms.Count;
         _currentRoom = _level.Rooms.First();
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
         
@@ -80,51 +81,24 @@ public partial class GameCycle : IGameModel
         }
     }
 
-    public void Update()
-    {
-        _currentRoom.IsPlayerInRoomBounds(Player.Position);
-
-        var currentEntities = Entities
-            .Values
-            .Where(entity => _currentRoom.IsPositionInRoomBounds(entity.Position) && entity is ISolid);
-        
-        var currentEntitiesWithKeys = Entities
-            .Where(entity => 
-                _currentRoom.IsPositionInRoomBounds(entity.Value.Position) && 
-                entity.Value is ISolid /*and not RoguelikeGame.Entities.Creatures.Player*/)
-            .ToDictionary(x => x.Key, y => y.Value);
-
-        CheckBulletCollision(currentEntitiesWithKeys);
-        CheckCollision(currentEntities);
-
-        var playerShift = _currentPov;
-        _currentPov = new Vector2(0, 0);
-        
-        Updated!(this, new GameEventArgs { Entities = Entities, POVShift = playerShift});                  
-    }
-    
     public void MovePlayer(Direction direction)
     {
         switch (direction)
         {
             case Direction.North:
                 Player.Speed += new Vector2(0, -BasicSpeed);
-                Player.Direction = Direction.North;
                 break;
             
             case Direction.South:
                 Player.Speed += new Vector2(0, BasicSpeed);
-                Player.Direction = Direction.South;
                 break;
             
             case Direction.East:
                 Player.Speed += new Vector2(BasicSpeed, 0);
-                Player.Direction = Direction.East;
                 break;
             
             case Direction.West:
                 Player.Speed += new Vector2(-BasicSpeed, 0);
-                Player.Direction = Direction.West;
                 break;
         }
     }
@@ -139,15 +113,31 @@ public partial class GameCycle : IGameModel
         var attackDirection = direction;
         var playerPosition = Player.Position;
 
-        var bulletStartPosition = attackDirection switch
+        Vector2 bulletStartPosition;
+        var deltaSpeed = new Vector2(0, 0);
+        switch (attackDirection)
         {
-            Direction.North => new Vector2(playerPosition.X + 25, playerPosition.Y - 20),
-            Direction.East => new Vector2(playerPosition.X + 50, playerPosition.Y + 25),
-            Direction.West => new Vector2(playerPosition.X - 20, playerPosition.Y + 25),
-            Direction.South => new Vector2(playerPosition.X + 25, playerPosition.Y + 50)
-        };
+            case Direction.North:
+                bulletStartPosition = new Vector2(playerPosition.X + 25, playerPosition.Y - 20);
+                deltaSpeed = new Vector2(_lastKnownPlayerSpeed.X, 0);
+                break;
+            case Direction.East:
+                bulletStartPosition = new Vector2(playerPosition.X + 50, playerPosition.Y + 25);
+                deltaSpeed = new Vector2(0,  _lastKnownPlayerSpeed.Y);
+                break;
+            case Direction.West:
+                bulletStartPosition = new Vector2(playerPosition.X - 20, playerPosition.Y + 25);
+                deltaSpeed = new Vector2(0, _lastKnownPlayerSpeed.Y);
+                break;
+            case Direction.South:
+                bulletStartPosition = new Vector2(playerPosition.X + 25, playerPosition.Y + 50);
+                deltaSpeed = new Vector2(_lastKnownPlayerSpeed.X, 0);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(attackDirection));
+        }
 
-        var bullet = new Bullet(4, bulletStartPosition, attackDirection.ConvertToVector() * 6, Player.Damage);
+        var bullet = new Bullet(4, bulletStartPosition, deltaSpeed / 2 + attackDirection.ConvertToVector() * 6, Player.Damage);
         Entities.Add(Entities.Keys.Max() + 1, bullet);
         _currentId++;
     }

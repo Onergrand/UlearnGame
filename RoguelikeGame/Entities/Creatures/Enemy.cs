@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
-using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities.Objects;
 using RoguelikeGame.GameModel;
 
@@ -31,9 +29,9 @@ public class Enemy : IEnemy
         HealthPoints = healthPoints;
         Position = position;
         EnemyBehaviour = enemyBehaviour;
+        LastShotTime = DateTime.Now;
         
-        Speed = Position;
-        Collider = new RectangleCollider((int)Speed.X, (int)Speed.Y, 50, 50);
+        Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
     }
     
     public Enemy(int imageId, Vector2 position, int healthPoints, int damage, int armorPoints, EnemyType.MonsterType enemyBehaviour)
@@ -44,15 +42,16 @@ public class Enemy : IEnemy
         Damage = damage;
         ArmorPoints = armorPoints;
         EnemyBehaviour = enemyBehaviour;
+        LastShotTime = DateTime.Now;
         
-        Speed = Position;
-        Collider = new RectangleCollider((int)Speed.X, (int)Speed.Y, 50, 50);
+        Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
     }
     
     public void Update()
     {
-        Position = Speed;
+        Position += Speed;
         MoveCollider(Position);
+        Speed = Vector2.Zero;
     }
 
     public void Attack(Vector2 playerPosition, Dictionary<int, IEntity> entities)
@@ -63,16 +62,18 @@ public class Enemy : IEnemy
             EnemyType.DefaultAttack(this, playerPosition, entities);
     }
     
-    public void MoveCollider(Vector2 newPos) => Collider = new RectangleCollider((int)Speed.X, (int)Speed.Y, 50, 50);
+    public void MoveCollider(Vector2 newPos) => Collider = new RectangleCollider((int)newPos.X, (int)newPos.Y, 50, 50);
 
     public void MoveToPlayer(Vector2 playerPosition)
     {
         if (Position.GetDistanceTo(playerPosition) < 190) 
             Speed += -Position.GetDirectionToPosition(playerPosition) * 3;
         else if (Position.GetDistanceTo(playerPosition) < 200)
-            return;
+            Speed = new Vector2(0, 0);
         else
             Speed += Position.GetDirectionToPosition(playerPosition) * 3;
+        
+        MoveCollider(Position + Speed);
     }
 
     public void ApplyDamage(int damage) => HealthPoints -= (int)(damage / (0.34 * ArmorPoints));
