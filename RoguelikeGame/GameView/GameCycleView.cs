@@ -9,6 +9,7 @@ using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Objects;
 using RoguelikeGame.GameModel;
+using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
 
 namespace RoguelikeGame.GameView;
@@ -19,8 +20,10 @@ public class GameCycleView : Game, IGameView
     public event EventHandler CycleFinished;
     public event EventHandler<ControlsEventArgs> PlayerMoved;
     public event EventHandler<ControlsEventArgs> PlayerAttacked;
-    
+    public event EventHandler ChangedGameState;
+
     private Dictionary<int, IEntity> _entities = new();
+    private GameState _currentGameState = new();
     private readonly Dictionary<int, Texture2D> _textures = new();
     
     private readonly GraphicsDeviceManager _graphics;
@@ -58,9 +61,10 @@ public class GameCycleView : Game, IGameView
         _textures.Add(5, Content.Load<Texture2D>("monsterBullet"));
     }
     
-    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift)
+    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState)
     {
         _entities = entities;
+        _currentGameState = currentGameState;
         _visualShift += POVShift;
     }
 
@@ -100,7 +104,7 @@ public class GameCycleView : Game, IGameView
                     break;
                 
                 case Keys.Escape:
-                        Exit();
+                    ChangedGameState!(this, EventArgs.Empty);
                     break;
             }
         }
@@ -108,7 +112,6 @@ public class GameCycleView : Game, IGameView
         base.Update(gameTime);
         CycleFinished!(this, EventArgs.Empty);
     }
-
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(new Color(177, 180, 186));
@@ -127,5 +130,5 @@ public class GameCycleView : Game, IGameView
             _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
 
         _spriteBatch.End();            
-    } 
+    }
 }

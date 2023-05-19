@@ -6,6 +6,7 @@ using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.Entities.Objects;
+using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
 
 namespace RoguelikeGame.GameModel;
@@ -35,6 +36,33 @@ public partial class GameCycle
     
     public void Update()
     {
+        switch (_currentGameState)
+        {
+            case GameState.Game:
+                UpdateGame();
+                break;
+            
+            case GameState.Menu:
+                UpdateMenu();
+                break;
+        }
+    }
+
+    private void UpdateMenu()
+    {
+        
+        // to code...
+
+        Updated!(this, new GameEventArgs
+        {
+            Entities = Entities,
+            POVShift = new Vector2(0, 0),
+            CurrentGameState = _currentGameState
+        });
+    }
+
+    private void UpdateGame()
+    {
         _currentRoom.IsPlayerInRoomBounds(Player.Position);
 
         var currentEntities = Entities
@@ -52,8 +80,13 @@ public partial class GameCycle
 
         var playerShift = _currentPov;
         _currentPov = new Vector2(0, 0);
-        
-        Updated!(this, new GameEventArgs { Entities = Entities, POVShift = playerShift});                  
+
+        Updated!(this, new GameEventArgs
+        {
+            Entities = Entities,
+            POVShift = playerShift,
+            CurrentGameState = _currentGameState
+        });
     }
     
     private void CheckCollision(IEnumerable<IEntity> currentEntities)

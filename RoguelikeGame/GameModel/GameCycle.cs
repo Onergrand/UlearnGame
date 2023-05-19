@@ -6,6 +6,7 @@ using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.Entities.Objects;
+using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
 
 namespace RoguelikeGame.GameModel;
@@ -16,9 +17,14 @@ public partial class GameCycle : IGameModel
     public Player Player { get; set; }
     public Dictionary<int, IEntity> Entities { get; set; }
     
+    private GameState _currentGameState = GameState.Menu;
+    private MenuOption _currentMenuOption = MenuOption.Null;
+    
     private Level _level;
     private Room _currentRoom;
+    
     private int _currentId;
+    
     private Vector2 _lastKnownPlayerSpeed;
     private Vector2 _currentPov = new(0,0);
     
@@ -39,6 +45,8 @@ public partial class GameCycle : IGameModel
 
     }
 
+    public void ChangeGameState() => _currentGameState = _currentGameState.GetOppositeState();
+
     private void CreateLevel()
     {
         var level = new Level(7);
@@ -56,28 +64,33 @@ public partial class GameCycle : IGameModel
                     continue;
                 
                 var pos = new Vector2(i * Level.TileSize - Level.TileSize, j * Level.TileSize - Level.TileSize);
-                switch (cell)
-                {
-                    case RoomObjects.Wall:
-                        Entities.Add(_currentId, new Wall(2, pos));
-                        _currentId++;
-                        break;
-                    
-                    case RoomObjects.Monster:
-                        Entities.Add(_currentId, new Floor(1, pos));
-                        _currentId++;
-                        Entities.Add(_currentId, EnemyType.CreateNewEnemy(pos));
-                        _currentId++;
-                        break;
-                
-                    case RoomObjects.Floor:
-                    case RoomObjects.Player:
-                    case RoomObjects.Exit:
-                        Entities.Add(_currentId, new Floor(1, pos));
-                        _currentId++;
-                        break;
-                }
+                FillCell(cell, pos);
             }
+        }
+    }
+
+    private void FillCell(RoomObjects cell, Vector2 pos)
+    {
+        switch (cell)
+        {
+            case RoomObjects.Wall:
+                Entities.Add(_currentId, new Wall(2, pos));
+                _currentId++;
+                break;
+
+            case RoomObjects.Monster:
+                Entities.Add(_currentId, new Floor(1, pos));
+                _currentId++;
+                Entities.Add(_currentId, EnemyType.CreateNewEnemy(pos));
+                _currentId++;
+                break;
+
+            case RoomObjects.Floor:
+            case RoomObjects.Player:
+            case RoomObjects.Exit:
+                Entities.Add(_currentId, new Floor(1, pos));
+                _currentId++;
+                break;
         }
     }
 
@@ -114,7 +127,7 @@ public partial class GameCycle : IGameModel
         var playerPosition = Player.Position;
 
         Vector2 bulletStartPosition;
-        var deltaSpeed = new Vector2(0, 0);
+        Vector2 deltaSpeed;
         switch (attackDirection)
         {
             case Direction.North:

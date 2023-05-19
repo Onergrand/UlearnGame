@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using RoguelikeGame.Entities.Objects;
 using RoguelikeGame.GameModel;
+using RoguelikeGame.GameModel.Helpers;
 
 namespace RoguelikeGame.Entities.Creatures;
 
