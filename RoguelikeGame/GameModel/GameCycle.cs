@@ -33,7 +33,6 @@ public partial class GameCycle : IGameModel
     public void Initialize()
     {
         Entities = new Dictionary<int, IEntity>();
-
         CreateLevel();
 
         var player = new Player(0, 

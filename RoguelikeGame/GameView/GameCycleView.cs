@@ -4,11 +4,8 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using RoguelikeGame.Creatures;
-using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Objects;
-using RoguelikeGame.GameModel;
 using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
 
@@ -46,8 +43,11 @@ public class GameCycleView : Game, IGameView
     {
         base.Initialize();
         _graphics.IsFullScreen = false;
-        _graphics.PreferredBackBufferWidth = 600;
-        _graphics.PreferredBackBufferHeight = 500;
+        
+        var adapter = GraphicsAdapter.DefaultAdapter;
+        _graphics.PreferredBackBufferWidth = adapter.CurrentDisplayMode.Width / 2;
+        _graphics.PreferredBackBufferHeight = 2 * adapter.CurrentDisplayMode.Height / 3;
+
         _graphics.ApplyChanges();
     }
 
@@ -60,6 +60,9 @@ public class GameCycleView : Game, IGameView
         _textures.Add(3, Content.Load<Texture2D>("monster"));
         _textures.Add(4, Content.Load<Texture2D>("playerBullet"));
         _textures.Add(5, Content.Load<Texture2D>("monsterBullet"));
+        _textures.Add(6, Content.Load<Texture2D>("mainMenuBackground"));
+        _textures.Add(7, Content.Load<Texture2D>("newGameButton"));
+        _textures.Add(8, Content.Load<Texture2D>("exitButton"));
     }
     
     public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState)
@@ -72,7 +75,10 @@ public class GameCycleView : Game, IGameView
     protected override void Update(GameTime gameTime)
     {
         var keysState = Keyboard.GetState();
+        var mouseState = Mouse.GetState();
+        
         var pressedKeys = keysState.GetPressedKeys();
+        var pressedMouseKeys = mouseState.LeftButton;
 
         foreach (var key in pressedKeys)
         {
@@ -80,6 +86,11 @@ public class GameCycleView : Game, IGameView
                 CheckInGameButtons(key);
             else
                 CheckInMenuButtons(key);
+        }
+
+        if (pressedMouseKeys == ButtonState.Pressed)
+        {
+            
         }
         
         base.Update(gameTime);
@@ -148,25 +159,72 @@ public class GameCycleView : Game, IGameView
     {
         GraphicsDevice.Clear(new Color(177, 180, 186));
         base.Draw(gameTime);
+        _spriteBatch.Begin();
+
+        var scaleBackground = GetScaling(_textures[6].Height);
+        var deltaX = GetDeltaX(_textures[6].Width, scaleBackground);
+        
+        var startGameButtonPositionX = _graphics.PreferredBackBufferWidth - _textures[7].Width * scaleBackground - 2.3f * deltaX;
+        var startGameButtonPositionY = _graphics.PreferredBackBufferHeight / 1.4f;
+        var startGameButtonPosition = new Vector2(startGameButtonPositionX, startGameButtonPositionY);
+        
+        DrawTexture(6, Vector2.Zero, scaleBackground, deltaX);
+        DrawTexture(7, startGameButtonPosition, scaleBackground, deltaX);
+        DrawTexture(8, startGameButtonPosition + new Vector2(0, _textures[8].Height + 20), scaleBackground, deltaX);
+
+        
+        _spriteBatch.End(); 
     }
 
     private void DrawGame(GameTime gameTime)
     {
-        GraphicsDevice.Clear(new Color(177, 180, 186));
+        GraphicsDevice.Clear(Color.Black);
+        
+        var scaleBackground = GetScaling(500);
+        var deltaX = GetDeltaX(600, scaleBackground);
+        
         base.Draw(gameTime);
         _spriteBatch.Begin();
 
-        var floor = _entities.Values.Where(x => x is Floor);
-        foreach (var o in floor)
-            _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
+        var floor = _entities.Values.Where(x => x is Floor).ToArray();
+        foreach (var o in floor) 
+            DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
         
-        var walls = _entities.Values.Where(x => x is Wall);
-        foreach (var o in _entities.Values.Except(floor))
-            _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
-        
-        foreach (var o in _entities.Values.Except(floor).Except(walls))
-            _spriteBatch.Draw(_textures[o.ImageId], o.Position - _visualShift, Color.White);
 
+        var walls = _entities.Values.Where(x => x is Wall);
+        foreach (var o in _entities.Values.Except(floor)) 
+            DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
+
+        
+        foreach (var o in _entities.Values.Except(floor).Except(walls)) 
+            DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
+
+        
         _spriteBatch.End();   
+    }
+    
+    private void DrawTexture(int textureId, Vector2 position, float scaleBackground, float deltaX)
+    {
+        var texturePosition = position * scaleBackground + new Vector2(deltaX, 0);
+
+        _spriteBatch.Draw(_textures[textureId], 
+            texturePosition, 
+            null,
+            Color.White, 
+            0.0F, 
+            Vector2.Zero, 
+            scaleBackground, 
+            SpriteEffects.None, 
+            1.0F);
+    }
+
+    private float GetScaling(int backgroundHeight)
+    {
+        return (float)_graphics.PreferredBackBufferHeight / backgroundHeight;
+    }
+
+    private float GetDeltaX(int backgroundWidth, float scaleBackground)
+    {
+        return (_graphics.PreferredBackBufferWidth - backgroundWidth * scaleBackground) / 2;
     }
 }

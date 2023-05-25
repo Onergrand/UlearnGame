@@ -4,6 +4,5 @@ public enum MenuOption : byte
 {
     Null,
     NewGame,
-    Resume,
     Exit,
 }

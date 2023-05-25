@@ -50,9 +50,6 @@ public partial class GameCycle
 
     private void UpdateMenu()
     {
-        
-        // to code...
-
         Updated!(this, new GameEventArgs
         {
             Entities = Entities,
@@ -65,9 +62,10 @@ public partial class GameCycle
     {
         _currentRoom.IsPlayerInRoomBounds(Player.Position);
 
-        var currentEntities = Entities
-            .Values
-            .Where(entity => _currentRoom.IsPositionInRoomBounds(entity.Position) && entity is ISolid);
+        var currentEntities = Entities.Where(x => _currentRoom.IsPositionInRoomBounds(x.Value.Position))
+            .ToDictionary(x => x.Key, y => y.Value);
+
+        var currentSolidEntities = currentEntities.Values.Where(entity => entity is ISolid);
         
         var currentEntitiesWithKeys = Entities
             .Where(entity => 
@@ -76,14 +74,14 @@ public partial class GameCycle
             .ToDictionary(x => x.Key, y => y.Value);
 
         CheckBulletsCollision(currentEntitiesWithKeys);
-        CheckCollision(currentEntities);
+        CheckCollision(currentSolidEntities);
 
         var playerShift = _currentPov;
         _currentPov = new Vector2(0, 0);
 
         Updated!(this, new GameEventArgs
         {
-            Entities = Entities,
+            Entities = currentEntities,
             POVShift = playerShift,
             CurrentGameState = _currentGameState
         });
