@@ -18,6 +18,7 @@ public interface IGameModel
     void ChangeGameState();
     void MovePlayer(Direction direction);
     void MakePlayerAttack(Direction direction);
+    void StartNewGame();
     void Initialize();
 }
 

@@ -73,6 +73,13 @@
 /processorParam:TextureFormat=Color
 /build:monsterBullet.png
 
+#begin montserrat.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:montserrat.spritefont
+
 #begin newGameButton.png
 /importer:TextureImporter
 /processor:TextureProcessor

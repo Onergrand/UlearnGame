@@ -16,9 +16,10 @@ public partial class GameCycle : IGameModel
     public event EventHandler<GameEventArgs> Updated;
     public Player Player { get; set; }
     public Dictionary<int, IEntity> Entities { get; set; }
+    private Dictionary<int, IEntity> _buttons;
     
     private GameState _currentGameState = GameState.Menu;
-    private MenuOption _currentMenuOption = MenuOption.Null;
+    
     
     private Level _level;
     private Room _currentRoom;
@@ -32,6 +33,20 @@ public partial class GameCycle : IGameModel
 
     public void Initialize()
     {
+        switch (_currentGameState)
+        {
+            case GameState.Game:
+                InitializeGame();
+                break;
+            
+            case GameState.Menu:
+                InitializeMenu();
+                break;
+        }
+    }
+
+    private void InitializeGame()
+    {
         Entities = new Dictionary<int, IEntity>();
         CreateLevel();
 
@@ -41,7 +56,24 @@ public partial class GameCycle : IGameModel
         Entities.Add(_currentId, player);
         Player = player;
         _currentId++;
+        
+        UpdateGame();
     }
+
+    private void InitializeMenu()
+    {
+        var startGameButton = new Button(7, Vector2.Zero, 200, 40, "Start new game", Color.White);
+        var exitButton = new Button(8, Vector2.Zero + new Vector2(0, 40), 200, 40, "Exit", Color.White);
+        
+        _buttons = new Dictionary<int, IEntity>
+        {
+            {0, startGameButton},
+            {1, exitButton}
+        };
+        
+        UpdateMenu();
+    }
+    
     
     public void Update()
     {
@@ -55,6 +87,12 @@ public partial class GameCycle : IGameModel
                 UpdateMenu();
                 break;
         }
+    }
+
+    public void StartNewGame()
+    {
+        _currentGameState = GameState.Game;
+        Initialize();
     }
 
     public void ChangeGameState() => _currentGameState = _currentGameState.GetOppositeState();

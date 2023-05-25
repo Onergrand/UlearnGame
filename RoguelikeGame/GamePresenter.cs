@@ -19,6 +19,7 @@ public class GamePresenter
         _gameView.PlayerAttacked += ViewModelMakePlayerAttack;
         _gameView.PlayerMoved += ViewModelMovePlayer;
         _gameView.ChangedGameState += ViewModelChangeGameState;
+        _gameView.StartNewGame += ViewModelStartNewGame;
         
         _gameModel.Initialize();
     }
@@ -46,6 +47,11 @@ public class GamePresenter
     private void ViewModelChangeGameState(object sender, EventArgs e)
     {
         _gameModel.ChangeGameState();
+    }
+    
+    private void ViewModelStartNewGame(object sender, EventArgs e)
+    {
+        _gameModel.StartNewGame();
     }
 
     private void ModelViewUpdate(object sender, GameEventArgs e)

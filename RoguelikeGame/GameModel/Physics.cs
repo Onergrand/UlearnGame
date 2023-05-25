@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.Entities.Objects;
-using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
 
 namespace RoguelikeGame.GameModel;
 
 public partial class GameCycle
 {
+    private MouseState _mouseState = Mouse.GetState();
+    
+    
     private void ChangeCurrentRoomIfExited()
     {
         var previousRoom = _currentRoom;
@@ -36,9 +39,14 @@ public partial class GameCycle
 
     private void UpdateMenu()
     {
+        foreach (var button in _buttons.Values.Cast<Button>())
+            button.Update(_mouseState);
+
+        _mouseState = Mouse.GetState();
+
         Updated!(this, new GameEventArgs
         {
-            Entities = Entities,
+            Entities = _buttons,
             POVShift = new Vector2(0, 0),
             CurrentGameState = _currentGameState
         });

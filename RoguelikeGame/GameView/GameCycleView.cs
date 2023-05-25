@@ -18,6 +18,7 @@ public class GameCycleView : Game, IGameView
     public event EventHandler<ControlsEventArgs> PlayerMoved;
     public event EventHandler<ControlsEventArgs> PlayerAttacked;
     public event EventHandler ChangedGameState;
+    public event EventHandler StartNewGame;
 
     private Dictionary<int, IEntity> _entities = new();
     private GameState _currentGameState;
@@ -26,6 +27,7 @@ public class GameCycleView : Game, IGameView
     private readonly GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private DateTime _lastTimeExitButtonPressed = DateTime.Now;
+    private SpriteFont _buttonFont;
     
     private Vector2 _visualShift = new(
         Level.InitialPos.X * Level.TileSize - Level.TileSize,
@@ -73,6 +75,7 @@ public class GameCycleView : Game, IGameView
         _textures.Add(6, Content.Load<Texture2D>("mainMenuBackground"));
         _textures.Add(7, Content.Load<Texture2D>("newGameButton"));
         _textures.Add(8, Content.Load<Texture2D>("exitButton"));
+        _buttonFont = Content.Load<SpriteFont>("montserrat");
     }
     
     public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState)
@@ -85,11 +88,9 @@ public class GameCycleView : Game, IGameView
     protected override void Update(GameTime gameTime)
     {
         var keysState = Keyboard.GetState();
-        var mouseState = Mouse.GetState();
-        
         var pressedKeys = keysState.GetPressedKeys();
-        var pressedMouseKeys = mouseState.LeftButton;
 
+        CheckMenuClickableButtons();
         foreach (var key in pressedKeys)
         {
             if(_currentGameState == GameState.Game)
@@ -98,12 +99,6 @@ public class GameCycleView : Game, IGameView
                 CheckInMenuButtons(key);
         }
 
-        if (pressedMouseKeys == ButtonState.Pressed)
-        {
-            var pos = mouseState.Position;
-            //if (mouseState.Position)
-        }
-        
         base.Update(gameTime);
         CycleFinished!(this, EventArgs.Empty);
     }
@@ -157,7 +152,22 @@ public class GameCycleView : Game, IGameView
         
         _lastTimeExitButtonPressed = DateTime.Now;
     }
-    
+
+    private void CheckMenuClickableButtons()
+    {
+        if (_currentGameState != GameState.Menu) return;
+        
+        var buttons = _entities.Values.Cast<Button>().ToArray();
+        
+        if (buttons[1].IsClicked())
+            Environment.Exit(0);
+        else if (buttons[0].IsClicked())
+        {
+            StartNewGame!(this, EventArgs.Empty);
+            buttons[0].Clicked();
+        }
+    }
+
     protected override void Draw(GameTime gameTime)
     {
          if (_currentGameState == GameState.Menu)
@@ -180,8 +190,12 @@ public class GameCycleView : Game, IGameView
         var startGameButtonPositionY = _graphics.PreferredBackBufferHeight / 1.4f;
         var startGameButtonPosition = new Vector2(startGameButtonPositionX, startGameButtonPositionY);
         
+        
         DrawTexture(6, Vector2.Zero, scaleBackground, deltaX);
-        DrawTexture(7, startGameButtonPosition, scaleBackground, deltaX);
+        
+        DrawButton(_entities[0] as Button);
+        DrawButton(_entities[1] as Button);
+        //DrawTexture(7, startGameButtonPosition, scaleBackground, deltaX);
         DrawTexture(8, startGameButtonPosition + new Vector2(0, _textures[8].Height + 20), scaleBackground, deltaX);
 
         
@@ -226,6 +240,11 @@ public class GameCycleView : Game, IGameView
             scaleBackground, 
             SpriteEffects.None, 
             1.0F);
+    }
+
+    private void DrawButton(Button button)
+    {
+        _spriteBatch.DrawString(_buttonFont, button.Text, button.Position, button.TextColor);
     }
 
     private float GetScaling(int backgroundHeight)
