@@ -41,7 +41,20 @@ public partial class GameCycle : IGameModel
         Entities.Add(_currentId, player);
         Player = player;
         _currentId++;
-
+    }
+    
+    public void Update()
+    {
+        switch (_currentGameState)
+        {
+            case GameState.Game:
+                UpdateGame();
+                break;
+            
+            case GameState.Menu:
+                UpdateMenu();
+                break;
+        }
     }
 
     public void ChangeGameState() => _currentGameState = _currentGameState.GetOppositeState();

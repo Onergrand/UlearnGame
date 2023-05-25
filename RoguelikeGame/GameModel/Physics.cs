@@ -33,20 +33,6 @@ public partial class GameCycle
         previousRoom.PlayerIsOutsideRoom -= ChangeCurrentRoomIfExited;
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
     }
-    
-    public void Update()
-    {
-        switch (_currentGameState)
-        {
-            case GameState.Game:
-                UpdateGame();
-                break;
-            
-            case GameState.Menu:
-                UpdateMenu();
-                break;
-        }
-    }
 
     private void UpdateMenu()
     {

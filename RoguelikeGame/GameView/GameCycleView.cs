@@ -42,12 +42,22 @@ public class GameCycleView : Game, IGameView
     protected override void Initialize()
     {
         base.Initialize();
+        
+        Window.AllowUserResizing = true;
+        Window.ClientSizeChanged += Window_ClientSizeChanged;
         _graphics.IsFullScreen = false;
         
         var adapter = GraphicsAdapter.DefaultAdapter;
         _graphics.PreferredBackBufferWidth = adapter.CurrentDisplayMode.Width / 2;
         _graphics.PreferredBackBufferHeight = 2 * adapter.CurrentDisplayMode.Height / 3;
 
+        _graphics.ApplyChanges();
+    }
+    
+    private void Window_ClientSizeChanged(object sender, EventArgs e)
+    {
+        _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+        _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
         _graphics.ApplyChanges();
     }
 
@@ -90,7 +100,8 @@ public class GameCycleView : Game, IGameView
 
         if (pressedMouseKeys == ButtonState.Pressed)
         {
-            
+            var pos = mouseState.Position;
+            //if (mouseState.Position)
         }
         
         base.Update(gameTime);
@@ -157,7 +168,8 @@ public class GameCycleView : Game, IGameView
 
     private void DrawMenu(GameTime gameTime)
     {
-        GraphicsDevice.Clear(new Color(177, 180, 186));
+        GraphicsDevice.Clear(Color.Black);
+        
         base.Draw(gameTime);
         _spriteBatch.Begin();
 
@@ -187,20 +199,18 @@ public class GameCycleView : Game, IGameView
         _spriteBatch.Begin();
 
         var floor = _entities.Values.Where(x => x is Floor).ToArray();
-        foreach (var o in floor) 
-            DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
-        
+        var walls = _entities.Values.Where(x => x is Wall).ToArray();
 
-        var walls = _entities.Values.Where(x => x is Wall);
-        foreach (var o in _entities.Values.Except(floor)) 
-            DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
+        DrawEntitiesInCorrectOrder(scaleBackground, deltaX, floor, walls, _entities.Values.Except(floor).Except(walls));
 
-        
-        foreach (var o in _entities.Values.Except(floor).Except(walls)) 
-            DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
-
-        
         _spriteBatch.End();   
+    }
+
+    private void DrawEntitiesInCorrectOrder(float scaleBackground, float deltaX, params IEnumerable<IEntity>[] entitiesCollection)
+    {
+        foreach (var collection in entitiesCollection)
+            foreach (var o in collection) 
+                DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
     }
     
     private void DrawTexture(int textureId, Vector2 position, float scaleBackground, float deltaX)
