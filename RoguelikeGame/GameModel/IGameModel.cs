@@ -26,13 +26,15 @@ public interface IGameModel
 
 public class GameEventArgs : EventArgs
 {
-    public Dictionary<int, IEntity> Entities { get; set; }    
-    public Vector2 POVShift { get; set; }
-    public GameState CurrentGameState { get; set; }
+    public Dictionary<int, IEntity> Entities { get; init; }    
+    public Vector2 POVShift { get; init; }
+    public GameState CurrentGameState { get; init; }
+    
+    public int PlayerId { get; init; }
 }
 
 public class LevelStateArgs : EventArgs
 {
-    public bool LevelFinished { get; set; }
-    public GameState GameState { get; set; }
+    public bool LevelFinished { get; init; }
+    public GameState GameState { get; init; }
 }

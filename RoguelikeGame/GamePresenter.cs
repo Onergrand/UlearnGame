@@ -68,6 +68,6 @@ public class GamePresenter
 
     private void ModelViewUpdate(object sender, GameEventArgs e)
     {
-        _gameView.LoadGameCycleParameters(e.Entities, e.POVShift, e.CurrentGameState);
+        _gameView.LoadGameCycleParameters(e.Entities, e.POVShift, e.CurrentGameState, e.PlayerId);
     }
 }

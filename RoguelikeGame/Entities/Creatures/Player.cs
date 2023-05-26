@@ -8,11 +8,9 @@ namespace RoguelikeGame.Entities.Creatures;
 public class Player : ICreature
 {
     public int ImageId { get; }
-    
+    public int Id { get; }
     public int HealthPoints { get; set; }
-
     public int Damage { get; set; } = 170;
-
     public int ArmorPoints { get; set; } = 4;
     
 
@@ -25,11 +23,12 @@ public class Player : ICreature
 
 
 
-    public Player(int imageId, Vector2 position, int healthPoints = 500)
+    public Player(int imageId, Vector2 position, int id, int healthPoints = 500)
     {
         ImageId = imageId;
         HealthPoints = healthPoints;
         Position = position;
+        Id = id;
         
         Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
     }

@@ -52,7 +52,8 @@ public partial class GameCycle
         {
             Entities = _buttons,
             POVShift = _cameraDeltaPosition,
-            CurrentGameState = _currentGameState
+            CurrentGameState = _currentGameState,
+            PlayerId = Player?.Id ?? 0
         });
         
         _cameraDeltaPosition = Vector2.Zero;
@@ -86,7 +87,8 @@ public partial class GameCycle
         {
             Entities = currentEntities,
             POVShift = playerShift,
-            CurrentGameState = _currentGameState
+            CurrentGameState = _currentGameState,
+            PlayerId = Player.Id
         });
     }
     
