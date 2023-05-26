@@ -15,4 +15,17 @@ public class LevelGenerationTests
             Assert.AreEqual(i, level.Rooms.Count);
         }
     }
+
+    [Test]
+    public void LevelGeneratesAskedMonstersAmount()
+    {
+        for (var i = 3; i < 15; i++)
+        for (var j = 0; j < 5000; j++)
+        {
+            var level = new Level(i);
+            var monstersAmount = level.MonsterAmountToCreate;
+        
+            Assert.AreEqual(monstersAmount, level.MonstersCreated);
+        }
+    }
 }

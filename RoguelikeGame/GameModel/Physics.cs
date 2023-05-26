@@ -18,6 +18,7 @@ public partial class GameCycle
     
     private MouseState _mouseState = Mouse.GetState();
     private Vector2 _cameraDeltaPosition = Vector2.Zero;
+    private int _remainingMonstersAmount;
 
     private void ChangeCurrentRoomIfExited()
     {
@@ -164,6 +165,7 @@ public partial class GameCycle
                         if (creature.HealthPoints <= 0)
                         {
                             Entities.Remove(entityId);
+                            _remainingMonstersAmount--;
                             if (creature is Player)
                             {
                                 ChangeGameState();

@@ -20,9 +20,8 @@ public partial class GameCycle : IGameModel
     
     private GameState _currentGameState = GameState.Menu;
     
-    private Level _level;
-    private Room _currentRoom;
     private Level _currentLevel;
+    private Room _currentRoom;
 
     private int _currentId;
     
@@ -117,10 +116,10 @@ public partial class GameCycle : IGameModel
     private void CreateLevel()
     {
         var level = new Level(7);
-        _currentLevel = level;
         
-        _level = level;
-        _currentRoom = _level.Rooms.First();
+        _currentLevel = level;
+        _remainingMonstersAmount = level.MonstersCreated;
+        _currentRoom = _currentLevel.Rooms.First();
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
         
         for (var i = 0; i < level.Map.GetLength(0); i++)
