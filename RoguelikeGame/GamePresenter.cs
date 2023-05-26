@@ -15,10 +15,14 @@ public class GamePresenter
         _gameModel = gameModel;
 
         _gameModel.Updated += ModelViewUpdate;
+        _gameModel.UpdateLevelState += ModelViewUpdateLevelState;
         _gameView.CycleFinished += ViewModelUpdate;
         _gameView.PlayerAttacked += ViewModelMakePlayerAttack;
         _gameView.PlayerMoved += ViewModelMovePlayer;
-
+        _gameView.ChangedGameState += ViewModelChangeGameState;
+        _gameView.StartNewGame += ViewModelStartNewGame;
+        _gameView.ClientSizeChanged += ViewModelUpdateClientParameters;
+        
         _gameModel.Initialize();
     }
 
@@ -41,9 +45,29 @@ public class GamePresenter
     {
         _gameModel.MakePlayerAttack(e.Direction);
     }
+    
+    private void ViewModelChangeGameState(object sender, EventArgs e)
+    {
+        _gameModel.ChangeGameState();
+    }
+    
+    private void ViewModelStartNewGame(object sender, EventArgs e)
+    {
+        _gameModel.StartNewGame();
+    }
+    
+    private void ViewModelUpdateClientParameters(object sender, ClientSizeEventArgs e)
+    {
+        _gameModel.UpdateMenuButtonsPositions(e.Height, e.Width);
+    }
+    
+    private void ModelViewUpdateLevelState(object sender, LevelStateArgs e)
+    {
+        _gameView.UpdateLevelState(e.LevelFinished, e.GameState);
+    }
 
     private void ModelViewUpdate(object sender, GameEventArgs e)
     {
-        _gameView.LoadGameCycleParameters(e.Entities, e.POVShift);
+        _gameView.LoadGameCycleParameters(e.Entities, e.POVShift, e.CurrentGameState);
     }
 }

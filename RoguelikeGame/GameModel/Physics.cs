@@ -2,16 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.Entities.Objects;
+using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
 
 namespace RoguelikeGame.GameModel;
 
 public partial class GameCycle
 {
+    public event EventHandler<LevelStateArgs> UpdateLevelState;
+    
+    private MouseState _mouseState = Mouse.GetState();
+    private Vector2 _cameraDeltaPosition = Vector2.Zero;
+
     private void ChangeCurrentRoomIfExited()
     {
         var previousRoom = _currentRoom;
@@ -28,18 +35,37 @@ public partial class GameCycle
 
         var delta = _currentRoom.TopLeftCorner - previousRoom.TopLeftCorner;
         _currentPov = new Vector2(delta.X * Level.TileSize, delta.Y * Level.TileSize);
-        
+        _cameraDeltaPosition -= _currentPov;
+
         previousRoom.PlayerIsOutsideRoom -= ChangeCurrentRoomIfExited;
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
     }
-    
-    public void Update()
+
+    private void UpdateMenu()
+    {
+        _mouseState = Mouse.GetState();
+        foreach (var button in _buttons.Values.Cast<Button>())
+            button.Update(_mouseState);
+
+        
+        Updated!(this, new GameEventArgs
+        {
+            Entities = _buttons,
+            POVShift = _cameraDeltaPosition,
+            CurrentGameState = _currentGameState
+        });
+        
+        _cameraDeltaPosition = Vector2.Zero;
+    }
+
+    private void UpdateGame()
     {
         _currentRoom.IsPlayerInRoomBounds(Player.Position);
 
-        var currentEntities = Entities
-            .Values
-            .Where(entity => _currentRoom.IsPositionInRoomBounds(entity.Position) && entity is ISolid);
+        var currentEntities = Entities.Where(x => _currentRoom.IsPositionInRoomBounds(x.Value.Position))
+            .ToDictionary(x => x.Key, y => y.Value);
+
+        var currentSolidEntities = currentEntities.Values.Where(entity => entity is ISolid);
         
         var currentEntitiesWithKeys = Entities
             .Where(entity => 
@@ -48,12 +74,20 @@ public partial class GameCycle
             .ToDictionary(x => x.Key, y => y.Value);
 
         CheckBulletsCollision(currentEntitiesWithKeys);
-        CheckCollision(currentEntities);
+        
+        if (_currentGameState == GameState.Menu) return;
+        
+        CheckCollision(currentSolidEntities);
 
         var playerShift = _currentPov;
         _currentPov = new Vector2(0, 0);
-        
-        Updated!(this, new GameEventArgs { Entities = Entities, POVShift = playerShift});                  
+
+        Updated!(this, new GameEventArgs
+        {
+            Entities = currentEntities,
+            POVShift = playerShift,
+            CurrentGameState = _currentGameState
+        });
     }
     
     private void CheckCollision(IEnumerable<IEntity> currentEntities)
@@ -83,7 +117,7 @@ public partial class GameCycle
         }
     }
 
-    private static void CheckCreatureCollision(IEntity entity, ICreature creature, Vector2 creatureInitialPos)
+    private void CheckCreatureCollision(IEntity entity, ICreature creature, Vector2 creatureInitialPos)
     {
         if (entity.Equals(creature)) return;
 
@@ -129,7 +163,12 @@ public partial class GameCycle
                         {
                             Entities.Remove(entityId);
                             if (creature is Player)
-                                Environment.Exit(0);
+                            {
+                                ChangeGameState();
+                                UpdateLevelState!(this, new LevelStateArgs { LevelFinished = true, GameState = _currentGameState});
+
+                                return;
+                            }
                         }
                     }
                 }

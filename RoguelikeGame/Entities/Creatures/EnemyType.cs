@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.GameModel;
+using RoguelikeGame.GameModel.Helpers;
 
 namespace RoguelikeGame.Entities.Creatures;
 
