@@ -28,7 +28,7 @@ public partial class GameCycle : IGameModel
     private Vector2 _lastKnownPlayerSpeed;
     private Vector2 _currentPov = new(0,0);
     
-    private const int BasicSpeed = 4;
+    private const int BasicSpeed = 3;
 
     public void Initialize()
     {

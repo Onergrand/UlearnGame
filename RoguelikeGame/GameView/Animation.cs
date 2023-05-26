@@ -26,13 +26,13 @@ public class Animation
     {
         CurrentTimeSpend += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
 
-        if (CurrentTimeSpend > UpdatePeriod)
-        {
-            CurrentTimeSpend -= UpdatePeriod;
-            _currentFrame.X++;
-            if (_currentFrame.X >= SpriteSize.X) 
-                _currentFrame.X = 0;
-        }
+        if (CurrentTimeSpend <= UpdatePeriod) return;
+        
+        CurrentTimeSpend -= UpdatePeriod;
+        _currentFrame.X++;
+        
+        if (_currentFrame.X >= SpriteSize.X) 
+            _currentFrame.X = 0;
     }
 
     public void SetCurrentFrameY(int frameY) { _currentFrame.Y = frameY; }

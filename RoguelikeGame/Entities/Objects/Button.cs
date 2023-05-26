@@ -13,9 +13,9 @@ public class Button : IEntity, ISolid
 
     public readonly string Text;
     public readonly Color TextColor;
+    private readonly int _height;
+    private readonly int _width;
     private bool _isClicked;
-    private int _height;
-    private int _width;
 
     public Button(int imageId, Vector2 position, int buttonWidth, int buttonHeight, string text, int id, Color textColor)
     {

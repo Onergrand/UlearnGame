@@ -102,7 +102,7 @@ public class GameCycleView : Game, IGameView
     {
         _animations.Clear();
         
-        var playerAnimation = new Animation(new Point(3, 4), 100, 50, 50);
+        var playerAnimation = new Animation(new Point(3, 4), 125, 50, 50);
         playerAnimation.SetLastFrameY(0);
         _animations.Add(_playerId, playerAnimation);
     } 
@@ -126,7 +126,7 @@ public class GameCycleView : Game, IGameView
         
         
         var keysState = Keyboard.GetState();
-        var pressedKeys = keysState.GetPressedKeys();
+        var pressedKeys = keysState.GetPressedKeys().Reverse();
 
         CheckMenuClickableButtons();
         foreach (var key in pressedKeys)
@@ -142,12 +142,7 @@ public class GameCycleView : Game, IGameView
             if (directions.Count > 0)
                 playerAnimation.SetLastFrameY(playerAnimation.CurrentFrame.Y);
             else
-            {
                 playerAnimation.SetCurrentFrameX(0);
-
-                if (playerAnimation.LastFrameY > 3) playerAnimation.SetCurrentFrameY(playerAnimation.LastFrameY - 3);
-                else playerAnimation.SetCurrentFrameY(0);
-            } 
         }
 
         base.Update(gameTime);
@@ -183,21 +178,30 @@ public class GameCycleView : Game, IGameView
                 
                 break;
                 
+            
             case Keys.Up:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.North });
+                playerAnimation?.SetCurrentFrameY(0);
+                
                 break;
             case Keys.Right:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.East });
+                playerAnimation?.SetCurrentFrameY(1); 
+                
                 break;
             case Keys.Left:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.West });
+                playerAnimation?.SetCurrentFrameY(3);
+                
                 break;
             case Keys.Down:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.South });
+                playerAnimation?.SetCurrentFrameY(2); 
+                
                 break;
                 
             case Keys.Escape:
-                if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 150) 
+                if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 200) 
                     break;
                 
                 ChangedGameState!(this, EventArgs.Empty);
@@ -208,7 +212,8 @@ public class GameCycleView : Game, IGameView
     
     private void CheckInMenuButtons(Keys key)
     {
-        if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 150) return;
+        if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 200 || _playerId == 0) 
+            return;
         
         if (key == Keys.Escape) 
             ChangedGameState!(this, EventArgs.Empty);
@@ -281,29 +286,37 @@ public class GameCycleView : Game, IGameView
     private void DrawEntitiesInCorrectOrder(params IEnumerable<IEntity>[] entitiesCollection)
     {
         foreach (var collection in entitiesCollection){
-            foreach (var o in collection)
+            foreach (var entity in collection)
             {
-                if (_animations.ContainsKey(o.Id))
+                if (_animations.ContainsKey(entity.Id))
                 {
-                    var animation = _animations[o.Id];
+                    var animation = _animations[entity.Id];
 
-                    var centerPosition = o.Position
-                                         + new Vector2(animation.FrameWidth, animation.FrameHeight) / 2;
-
-                    _spriteBatch.Draw(_textures[o.ImageId], centerPosition - _visualShift, new Rectangle(
+                    var texturePosition = GetEntityPositionByWindowSize(entity.Position - _visualShift);
+                    
+                    _spriteBatch.Draw(
+                        _textures[entity.ImageId],
+                        texturePosition,
+                        new Rectangle(
                         animation.CurrentFrame.X * animation.FrameWidth,
                         animation.CurrentFrame.Y * animation.FrameHeight,
-                        animation.FrameWidth, animation.FrameHeight), Color.White);
+                        animation.FrameWidth, animation.FrameHeight),
+                        Color.White, 
+                        0,
+                        Vector2.Zero, 
+                        _backgroundScaling, 
+                        SpriteEffects.None, 
+                        1.0F);
                 }
                 else
-                    DrawTexture(o.ImageId, o.Position - _visualShift);
+                    DrawTexture(entity.ImageId, entity.Position - _visualShift);
             }
         }
     }
     
     private void DrawTexture(int textureId, Vector2 position)
     {
-        var texturePosition = position * _backgroundScaling + new Vector2(_deltaX, 0);
+        var texturePosition = GetEntityPositionByWindowSize(position);
 
         _spriteBatch.Draw(_textures[textureId], 
             texturePosition, 
@@ -329,5 +342,10 @@ public class GameCycleView : Game, IGameView
     private float GetDeltaX(int backgroundWidth, float scaleBackground)
     {
         return (_graphics.PreferredBackBufferWidth - backgroundWidth * scaleBackground) / 2;
+    }
+
+    private Vector2 GetEntityPositionByWindowSize(Vector2 position)
+    {
+        return position * _backgroundScaling + new Vector2(_deltaX, 0);
     }
 }
