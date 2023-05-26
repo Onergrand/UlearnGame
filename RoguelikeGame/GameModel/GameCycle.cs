@@ -22,7 +22,8 @@ public partial class GameCycle : IGameModel
     
     private Level _level;
     private Room _currentRoom;
-    
+    private Level _currentLevel;
+
     private int _currentId;
     
     private Vector2 _lastKnownPlayerSpeed;
@@ -116,7 +117,8 @@ public partial class GameCycle : IGameModel
     private void CreateLevel()
     {
         var level = new Level(7);
-
+        _currentLevel = level;
+        
         _level = level;
         _currentRoom = _level.Rooms.First();
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;

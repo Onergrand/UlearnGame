@@ -16,7 +16,7 @@ public class Room
     public int Breadth { get; }
     public Point TopLeftCorner { get; }
     public int RoomsLeft { get; }
-    //public readonly  RoomMap
+    
     public readonly Dictionary<Direction, Room> Neighbours;
     
     private readonly List<Direction> _possibleDirections = new() { Direction.North, Direction.East, Direction.West, Direction.South };
@@ -80,6 +80,45 @@ public class Room
 
             Neighbours[neighbourDirection] = new Room(nextPoint, dict, Length, Breadth, RoomsLeft - roomsAmount);
         }
+    }
+
+    public bool TryCreateNeighbour(Direction direction)
+    {
+        var neighbour = new Room(GetNextRoomPosition(direction), Length, Breadth, 7); // Потом убрать roomsLeft
+
+        if (neighbour.TopLeftCorner.X is > 82 or < 16 || neighbour.TopLeftCorner.Y is > 85 or < 13)
+            return false;
+            
+        
+        neighbour.Neighbours[direction.OppositeDirection()] = this;
+        
+        Neighbours[direction] = neighbour;
+        return true;
+    }
+
+    private Point GetNextRoomPosition(Direction direction)
+    {
+        var nextPoint = TopLeftCorner;
+        switch (direction)
+        {
+            case Direction.North:
+                nextPoint -= new Point(0, Breadth);
+                break;
+                
+            case Direction.West:
+                nextPoint -= new Point(Length, 0);
+                break;
+                
+            case Direction.East:
+                nextPoint += new Point(Length, 0);
+                break;
+                
+            case Direction.South:
+                nextPoint += new Point(0, Breadth);
+                break;
+        }
+
+        return nextPoint;
     }
     
     public bool IsPositionInRoomBounds(Vector2 position)
