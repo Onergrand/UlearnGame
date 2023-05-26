@@ -1,12 +1,11 @@
-﻿using System;
-using RoguelikeGame;
-using RoguelikeGame.GameModel;
+﻿using RoguelikeGame.GameModel;
 using RoguelikeGame.GameView;
+
+namespace RoguelikeGame;
 
 public static class Program
 {
-    [STAThread]
-    static void Main()
+    public static void Main()
     {        
         var presenter = new GamePresenter(new GameCycleView(), new GameCycle());
         presenter.LaunchGame();

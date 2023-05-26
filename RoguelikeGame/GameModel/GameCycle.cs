@@ -20,9 +20,10 @@ public partial class GameCycle : IGameModel
     
     private GameState _currentGameState = GameState.Menu;
     
-    private Level _level;
+    private Level _currentLevel;
     private Room _currentRoom;
-    
+    private int _currentLevelNumber;
+
     private int _currentId;
     
     private Vector2 _lastKnownPlayerSpeed;
@@ -30,12 +31,14 @@ public partial class GameCycle : IGameModel
     
     private const int BasicSpeed = 3;
 
+    public int LevelRoomsAmount() => _currentLevel.Rooms.Count; 
+
     public void Initialize()
     {
         switch (_currentGameState)
         {
             case GameState.Game:
-                InitializeGame();
+                InitializeGame(1);
                 break;
             
             case GameState.Menu:
@@ -44,10 +47,11 @@ public partial class GameCycle : IGameModel
         }
     }
 
-    private void InitializeGame()
+    private void InitializeGame(int currentLevelNumber)
     {
+        _currentLevelNumber = currentLevelNumber;
         Entities = new Dictionary<int, IEntity>();
-        CreateLevel();
+        CreateLevel(currentLevelNumber);
 
         var player = new Player(0, 
             new Vector2(Level.InitialPos.X * Level.TileSize, Level.InitialPos.Y * Level.TileSize), _currentId);
@@ -113,12 +117,14 @@ public partial class GameCycle : IGameModel
 
     public void ChangeGameState() => _currentGameState = _currentGameState.GetOppositeState();
 
-    private void CreateLevel()
+    private void CreateLevel(int currentLevelNumber)
     {
-        var level = new Level(7);
-
-        _level = level;
-        _currentRoom = _level.Rooms.First();
+        var roomsAmountToAdd = currentLevelNumber / 5;
+        var level = new Level(5 + roomsAmountToAdd);
+        
+        _currentLevel = level;
+        _remainingMonstersAmount = level.MonstersCreated;
+        _currentRoom = _currentLevel.Rooms.First();
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
         
         for (var i = 0; i < level.Map.GetLength(0); i++)

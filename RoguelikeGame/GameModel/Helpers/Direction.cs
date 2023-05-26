@@ -12,7 +12,8 @@ public enum Direction : byte
     SouthEast,
     SouthWest,
     East,
-    West
+    West,
+    Null
 }
 
 public static class DirectionExtensions

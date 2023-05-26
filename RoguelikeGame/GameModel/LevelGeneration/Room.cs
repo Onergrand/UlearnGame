@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using RoguelikeGame.GameModel.Helpers;
 
@@ -13,80 +11,63 @@ public class Room
     public event OutRoomBoundsDelegate PlayerIsOutsideRoom;
     
     public int Length { get; }
-    public int Breadth { get; }
+    public int Width { get; }
     public Point TopLeftCorner { get; }
-    public int RoomsLeft { get; }
-    //public readonly  RoomMap
-    public readonly Dictionary<Direction, Room> Neighbours;
     
-    private readonly List<Direction> _possibleDirections = new() { Direction.North, Direction.East, Direction.West, Direction.South };
+    public readonly Dictionary<Direction, Room> Neighbours;
 
-    public Room(Point topLeftCorner, int length, int breadth, int roomsLeft)
+    public Room(Point topLeftCorner, int length, int width)
     {
         TopLeftCorner = topLeftCorner;
         Neighbours = new Dictionary<Direction, Room>();
         Length = length;
-        Breadth = breadth;
-        RoomsLeft = roomsLeft;
+        Width = width;
     }
-
-    private Room(Point topLeftCorner, Dictionary<Direction, Room> neighbours, int length, int breadth, int roomsLeft)
+    
+    public bool TryCreateNeighbour(Direction direction)
     {
-        TopLeftCorner = topLeftCorner;
-        Length = length;
-        Breadth = breadth;
-        RoomsLeft = roomsLeft;
-        
-        Neighbours = neighbours;
-        _possibleDirections = _possibleDirections.Except(Neighbours.Keys).ToList();
-    }
+        var neighbour = new Room(GetNextRoomPosition(direction), Length, Width);
 
-    public void CreateNeighbours(Level level)
-    {
-        var rnd = new Random();
-        var roomsAmount = rnd.Next(0, RoomsLeft > _possibleDirections.Count ? _possibleDirections.Count : RoomsLeft);
-
-        for (var i = 0; i < roomsAmount; i++)
-        {
-            var neighbourDirectionIndex = rnd.Next(_possibleDirections.Count);
-            var neighbourDirection = _possibleDirections[neighbourDirectionIndex];
-            _possibleDirections.RemoveAt(neighbourDirectionIndex);
-
-
-            var nextPoint = TopLeftCorner;
-            switch (neighbourDirection)
-            {
-                case Direction.North:
-                    nextPoint -= new Point(0, Breadth);
-                    break;
-                
-                case Direction.West:
-                    nextPoint -= new Point(Length, 0);
-                    break;
-                
-                case Direction.East:
-                    nextPoint += new Point(Length, 0);
-                    break;
-                
-                case Direction.South:
-                    nextPoint += new Point(0, Breadth);
-                    break;
-            }
-            if (level.Rooms.Select(x => x.TopLeftCorner).Contains(nextPoint))
-                continue;
-
-            var dict = new Dictionary<Direction, Room> { [neighbourDirection.OppositeDirection()] = this };
+        if (neighbour.TopLeftCorner.X is > 82 or < 16 || neighbour.TopLeftCorner.Y is > 85 or < 13)
+            return false;
             
+        
+        neighbour.Neighbours[direction.OppositeDirection()] = this;
+        
+        Neighbours[direction] = neighbour;
+        return true;
+    }
 
-            Neighbours[neighbourDirection] = new Room(nextPoint, dict, Length, Breadth, RoomsLeft - roomsAmount);
+    private Point GetNextRoomPosition(Direction direction)
+    {
+        var nextPoint = TopLeftCorner;
+        switch (direction)
+        {
+            case Direction.North:
+                nextPoint -= new Point(0, Width);
+                break;
+                
+            case Direction.West:
+                nextPoint -= new Point(Length, 0);
+                break;
+                
+            case Direction.East:
+                nextPoint += new Point(Length, 0);
+                break;
+                
+            case Direction.South:
+                nextPoint += new Point(0, Width);
+                break;
         }
+
+        return nextPoint;
     }
     
     public bool IsPositionInRoomBounds(Vector2 position)
     {
         var room = this;
         var topLeft = new Vector2((room.TopLeftCorner.X - 1.4f) * 50, (room.TopLeftCorner.Y - 1.4f) * 50);
-        var bottomRight = new Vector2(topLeft.X + room.Length * 56, topLeft.Y + room.Breadth * 56);
+        var bottomRight = new Vector2(topLeft.X + room.Length * 56, topLeft.Y + room.Width * 56);
 
         if (position.X < topLeft.X || position.Y < topLeft.Y || position.X > bottomRight.X || position.Y > bottomRight.Y) 
             return false;
@@ -98,7 +79,7 @@ public class Room
     {
         var room = this;
         var topLeft = new Vector2((room.TopLeftCorner.X - 1) * 50, (room.TopLeftCorner.Y - 1) * 50);
-        var bottomRight = new Vector2(topLeft.X + (room.Length + 1) * 50, topLeft.Y + (room.Breadth + 1) * 50);
+        var bottomRight = new Vector2(topLeft.X + (room.Length + 1) * 50, topLeft.Y + (room.Width + 1) * 50);
 
         if (position.X < topLeft.X || position.Y < topLeft.Y || position.X > bottomRight.X || position.Y > bottomRight.Y)
             PlayerIsOutsideRoom!();
