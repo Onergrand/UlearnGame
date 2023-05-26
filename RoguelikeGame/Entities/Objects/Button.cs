@@ -10,9 +10,11 @@ public class Button : IEntity, ISolid
     public Vector2 Speed { get; set; }
     public RectangleCollider Collider { get; set; }
 
-    private bool _isClicked;
     public readonly string Text;
     public readonly Color TextColor;
+    private bool _isClicked;
+    private int _height;
+    private int _width;
 
     public Button(int imageId, Vector2 position, int buttonWidth, int buttonHeight, string text,
         Color textColor)
@@ -21,6 +23,8 @@ public class Button : IEntity, ISolid
         Position = position;
         Text = text;
         TextColor = textColor;
+        _height = buttonHeight;
+        _width = buttonWidth;
         
         Collider = new RectangleCollider((int)position.X, (int)position.Y, buttonWidth, buttonHeight);
     }
@@ -39,5 +43,9 @@ public class Button : IEntity, ISolid
     public bool IsClicked() => _isClicked;
     public void Clicked() => _isClicked = false;
 
-    public void MoveCollider(Vector2 newPos) { }
+    public void MoveCollider(Vector2 newPos)
+    {
+        Position = newPos;
+        Collider = new RectangleCollider((int)newPos.X, (int)newPos.Y, _width, _height);
+    }
 }

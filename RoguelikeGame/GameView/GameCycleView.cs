@@ -19,6 +19,7 @@ public class GameCycleView : Game, IGameView
     public event EventHandler<ControlsEventArgs> PlayerAttacked;
     public event EventHandler ChangedGameState;
     public event EventHandler StartNewGame;
+    public event EventHandler<ClientSizeEventArgs> ClientSizeChanged;
 
     private Dictionary<int, IEntity> _entities = new();
     private GameState _currentGameState;
@@ -28,6 +29,10 @@ public class GameCycleView : Game, IGameView
     private SpriteBatch _spriteBatch;
     private DateTime _lastTimeExitButtonPressed = DateTime.Now;
     private SpriteFont _buttonFont;
+
+    private float _backgroundScaling;
+    private float _deltaX;
+    private bool _levelFinished = true;
     
     private Vector2 _visualShift = new(
         Level.InitialPos.X * Level.TileSize - Level.TileSize,
@@ -61,6 +66,18 @@ public class GameCycleView : Game, IGameView
         _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
         _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
         _graphics.ApplyChanges();
+        
+        ClientSizeChanged!(this, new ClientSizeEventArgs
+        {
+            Height = _graphics.PreferredBackBufferHeight, 
+            Width = _graphics.PreferredBackBufferWidth
+        });
+    }
+
+    public void UpdateLevelState(bool levelFinished, GameState gameState)
+    {
+        _currentGameState = gameState;
+        _levelFinished = levelFinished;
     }
 
     protected override void LoadContent()
@@ -73,8 +90,6 @@ public class GameCycleView : Game, IGameView
         _textures.Add(4, Content.Load<Texture2D>("playerBullet"));
         _textures.Add(5, Content.Load<Texture2D>("monsterBullet"));
         _textures.Add(6, Content.Load<Texture2D>("mainMenuBackground"));
-        _textures.Add(7, Content.Load<Texture2D>("newGameButton"));
-        _textures.Add(8, Content.Load<Texture2D>("exitButton"));
         _buttonFont = Content.Load<SpriteFont>("montserrat");
     }
     
@@ -161,7 +176,7 @@ public class GameCycleView : Game, IGameView
         
         if (buttons[1].IsClicked())
             Environment.Exit(0);
-        else if (buttons[0].IsClicked())
+        else if (buttons[0].IsClicked() && _levelFinished)
         {
             StartNewGame!(this, EventArgs.Empty);
             buttons[0].Clicked();
@@ -183,21 +198,16 @@ public class GameCycleView : Game, IGameView
         base.Draw(gameTime);
         _spriteBatch.Begin();
 
-        var scaleBackground = GetScaling(_textures[6].Height);
-        var deltaX = GetDeltaX(_textures[6].Width, scaleBackground);
-        
-        var startGameButtonPositionX = _graphics.PreferredBackBufferWidth - _textures[7].Width * scaleBackground - 2.3f * deltaX;
-        var startGameButtonPositionY = _graphics.PreferredBackBufferHeight / 1.4f;
-        var startGameButtonPosition = new Vector2(startGameButtonPositionX, startGameButtonPositionY);
-        
-        
-        DrawTexture(6, Vector2.Zero, scaleBackground, deltaX);
+        _backgroundScaling = GetScaling(_textures[6].Height);
+        _deltaX = GetDeltaX(_textures[6].Width, _backgroundScaling);
+
+        DrawTexture(6, Vector2.Zero);
         
         DrawButton(_entities[0] as Button);
         DrawButton(_entities[1] as Button);
-        //DrawTexture(7, startGameButtonPosition, scaleBackground, deltaX);
-        DrawTexture(8, startGameButtonPosition + new Vector2(0, _textures[8].Height + 20), scaleBackground, deltaX);
-
+        
+        _spriteBatch.DrawString(_buttonFont, "Shadowed Abyss",
+            new Vector2(800 + _deltaX, (float)_graphics.PreferredBackBufferHeight / 16), Color.White);
         
         _spriteBatch.End(); 
     }
@@ -206,8 +216,8 @@ public class GameCycleView : Game, IGameView
     {
         GraphicsDevice.Clear(Color.Black);
         
-        var scaleBackground = GetScaling(500);
-        var deltaX = GetDeltaX(600, scaleBackground);
+        _backgroundScaling = GetScaling(500);
+        _deltaX = GetDeltaX(600, _backgroundScaling);
         
         base.Draw(gameTime);
         _spriteBatch.Begin();
@@ -215,21 +225,21 @@ public class GameCycleView : Game, IGameView
         var floor = _entities.Values.Where(x => x is Floor).ToArray();
         var walls = _entities.Values.Where(x => x is Wall).ToArray();
 
-        DrawEntitiesInCorrectOrder(scaleBackground, deltaX, floor, walls, _entities.Values.Except(floor).Except(walls));
+        DrawEntitiesInCorrectOrder(floor, walls, _entities.Values.Except(floor).Except(walls));
 
         _spriteBatch.End();   
     }
 
-    private void DrawEntitiesInCorrectOrder(float scaleBackground, float deltaX, params IEnumerable<IEntity>[] entitiesCollection)
+    private void DrawEntitiesInCorrectOrder(params IEnumerable<IEntity>[] entitiesCollection)
     {
         foreach (var collection in entitiesCollection)
             foreach (var o in collection) 
-                DrawTexture(o.ImageId, o.Position - _visualShift, scaleBackground, deltaX);
+                DrawTexture(o.ImageId, o.Position - _visualShift);
     }
     
-    private void DrawTexture(int textureId, Vector2 position, float scaleBackground, float deltaX)
+    private void DrawTexture(int textureId, Vector2 position)
     {
-        var texturePosition = position * scaleBackground + new Vector2(deltaX, 0);
+        var texturePosition = position * _backgroundScaling + new Vector2(_deltaX, 0);
 
         _spriteBatch.Draw(_textures[textureId], 
             texturePosition, 
@@ -237,7 +247,7 @@ public class GameCycleView : Game, IGameView
             Color.White, 
             0.0F, 
             Vector2.Zero, 
-            scaleBackground, 
+            _backgroundScaling, 
             SpriteEffects.None, 
             1.0F);
     }

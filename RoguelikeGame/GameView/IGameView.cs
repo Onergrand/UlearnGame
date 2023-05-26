@@ -13,12 +13,20 @@ public interface IGameView
     event EventHandler<ControlsEventArgs> PlayerAttacked;
     event EventHandler ChangedGameState;
     event EventHandler StartNewGame;
+    event EventHandler<ClientSizeEventArgs> ClientSizeChanged;
 
     void Run();
     void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState);
+    void UpdateLevelState(bool levelFinished, GameState gameState);
 }
 
 public class ControlsEventArgs : EventArgs
 {
-    public Direction Direction { get; set; }
+    public Direction Direction { get; init; }
+}
+
+public class ClientSizeEventArgs : EventArgs
+{
+    public int Height { get; init; }
+    public int Width { get; init; }
 }

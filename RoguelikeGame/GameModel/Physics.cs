@@ -7,15 +7,18 @@ using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.Entities.Objects;
+using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
 
 namespace RoguelikeGame.GameModel;
 
 public partial class GameCycle
 {
+    public event EventHandler<LevelStateArgs> UpdateLevelState;
+    
     private MouseState _mouseState = Mouse.GetState();
-    
-    
+    private Vector2 _cameraDeltaPosition = Vector2.Zero;
+
     private void ChangeCurrentRoomIfExited()
     {
         var previousRoom = _currentRoom;
@@ -32,24 +35,27 @@ public partial class GameCycle
 
         var delta = _currentRoom.TopLeftCorner - previousRoom.TopLeftCorner;
         _currentPov = new Vector2(delta.X * Level.TileSize, delta.Y * Level.TileSize);
-        
+        _cameraDeltaPosition -= _currentPov;
+
         previousRoom.PlayerIsOutsideRoom -= ChangeCurrentRoomIfExited;
         _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
     }
 
     private void UpdateMenu()
     {
+        _mouseState = Mouse.GetState();
         foreach (var button in _buttons.Values.Cast<Button>())
             button.Update(_mouseState);
 
-        _mouseState = Mouse.GetState();
-
+        
         Updated!(this, new GameEventArgs
         {
             Entities = _buttons,
-            POVShift = new Vector2(0, 0),
+            POVShift = _cameraDeltaPosition,
             CurrentGameState = _currentGameState
         });
+        
+        _cameraDeltaPosition = Vector2.Zero;
     }
 
     private void UpdateGame()
@@ -68,6 +74,9 @@ public partial class GameCycle
             .ToDictionary(x => x.Key, y => y.Value);
 
         CheckBulletsCollision(currentEntitiesWithKeys);
+        
+        if (_currentGameState == GameState.Menu) return;
+        
         CheckCollision(currentSolidEntities);
 
         var playerShift = _currentPov;
@@ -108,7 +117,7 @@ public partial class GameCycle
         }
     }
 
-    private static void CheckCreatureCollision(IEntity entity, ICreature creature, Vector2 creatureInitialPos)
+    private void CheckCreatureCollision(IEntity entity, ICreature creature, Vector2 creatureInitialPos)
     {
         if (entity.Equals(creature)) return;
 
@@ -154,7 +163,12 @@ public partial class GameCycle
                         {
                             Entities.Remove(entityId);
                             if (creature is Player)
-                                Environment.Exit(0);
+                            {
+                                ChangeGameState();
+                                UpdateLevelState!(this, new LevelStateArgs { LevelFinished = true, GameState = _currentGameState});
+
+                                return;
+                            }
                         }
                     }
                 }

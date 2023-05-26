@@ -20,7 +20,6 @@ public partial class GameCycle : IGameModel
     
     private GameState _currentGameState = GameState.Menu;
     
-    
     private Level _level;
     private Room _currentRoom;
     
@@ -58,12 +57,14 @@ public partial class GameCycle : IGameModel
         _currentId++;
         
         UpdateGame();
+        UpdateLevelState(this, new LevelStateArgs{ LevelFinished = false, GameState = _currentGameState});
     }
 
     private void InitializeMenu()
     {
-        var startGameButton = new Button(7, Vector2.Zero, 200, 40, "Start new game", Color.White);
-        var exitButton = new Button(8, Vector2.Zero + new Vector2(0, 40), 200, 40, "Exit", Color.White);
+        var startGameButtonPosition = new Vector2(30, 515);
+        var startGameButton = new Button(7, startGameButtonPosition, 300, 40, "Start new game", Color.White);
+        var exitButton = new Button(8, startGameButtonPosition + new Vector2(0, 80), 80, 40, "Exit", Color.White);
         
         _buttons = new Dictionary<int, IEntity>
         {
@@ -81,12 +82,26 @@ public partial class GameCycle : IGameModel
         {
             case GameState.Game:
                 UpdateGame();
+                if (_currentGameState == GameState.Menu)
+                    UpdateMenu();
                 break;
             
             case GameState.Menu:
                 UpdateMenu();
                 break;
         }
+    }
+    
+    public void UpdateMenuButtonsPositions(int height, int width)
+    {
+        var x = 30;
+        var y = height / 1.4f;
+
+        var startGameButton = _buttons[0] as Button;
+        startGameButton!.MoveCollider(new Vector2(x, y));
+
+        var exitButton = _buttons[1] as Button;
+        exitButton!.MoveCollider( new Vector2(x, y + 80));
     }
 
     public void StartNewGame()
