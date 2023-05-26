@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using RoguelikeGame.GameView;
 
 namespace RoguelikeGame.GameModel.LevelGeneration;
 
@@ -27,5 +28,26 @@ public class LevelGenerationTests
         
             Assert.AreEqual(monstersAmount, level.MonstersCreated);
         }
+    }
+    
+    [Test]
+    public void LevelGeneratesAskedRoomsAmountByLevelNumber()
+    {
+        for (var i = 0; i < 15; i++)
+        for (var j = 0; j < 5000; j++)
+        {
+            var roomsGenerated = CreateLevel(i);
+            var x = i / 5;
+            
+            Assert.AreEqual(7 + x, roomsGenerated);
+        }
+    }
+    
+    private int CreateLevel(int currentLevelNumber)
+    {
+        var roomsAmountToAdd = currentLevelNumber / 5;
+        var level = new Level(7 + roomsAmountToAdd);
+        
+        return level.Rooms.Count;
     }
 }

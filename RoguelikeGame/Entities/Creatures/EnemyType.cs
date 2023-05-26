@@ -65,8 +65,11 @@ public class EnemyType
         
         enemy.LastShotTime = DateTime.Now;
 
-        var directions = (Direction[])Enum.GetValues(typeof(Direction));
-
+        
+        var directionsValues = (Direction[])Enum.GetValues(typeof(Direction));
+        var directions = new List<Direction>();
+        directions.AddRange(directionsValues.Except(new[] { Direction.Null }));
+        
         var id = entities.Keys.Max() + 1;
         
         var bullets = directions

@@ -160,20 +160,8 @@ public partial class GameCycle
                     {
                         if (bullet.ImageId == 5 && creature is Enemy)
                             continue;
-                        
-                        creature.ApplyDamage(bullet.Damage);
-                        if (creature.HealthPoints <= 0)
-                        {
-                            Entities.Remove(entityId);
-                            _remainingMonstersAmount--;
-                            if (creature is Player)
-                            {
-                                ChangeGameState();
-                                UpdateLevelState!(this, new LevelStateArgs { LevelFinished = true, GameState = _currentGameState});
 
-                                return;
-                            }
-                        }
+                        if (HandleCreatureDamageAndCheckLevelCompletion(creature, bullet, entityId)) return;
                     }
                 }
                 
@@ -181,5 +169,30 @@ public partial class GameCycle
                     Entities.Remove(bulletId);
             }
         }
+    }
+
+    private bool HandleCreatureDamageAndCheckLevelCompletion(ICreature creature, Bullet bullet, int entityId)
+    {
+        creature.ApplyDamage(bullet.Damage);
+        if (creature.HealthPoints > 0) return false;
+        
+        Entities.Remove(entityId);
+        _remainingMonstersAmount--;
+
+
+        if (creature is Player)
+        {
+            ChangeGameState();
+            UpdateLevelState!(this, new LevelStateArgs { LevelFinished = true, GameState = _currentGameState });
+
+            return true;
+        }
+
+        if (_remainingMonstersAmount != 0) return false;
+        
+        _currentPov = _cameraDeltaPosition;
+        InitializeGame(_currentLevelNumber + 1);
+
+        return false;
     }
 }
