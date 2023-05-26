@@ -6,18 +6,18 @@ namespace RoguelikeGame.Entities.Objects;
 public class Button : IEntity, ISolid
 {
     public int ImageId { get; }
+    public int Id { get; }
     public Vector2 Position { get; set; }
     public Vector2 Speed { get; set; }
     public RectangleCollider Collider { get; set; }
 
     public readonly string Text;
     public readonly Color TextColor;
+    private readonly int _height;
+    private readonly int _width;
     private bool _isClicked;
-    private int _height;
-    private int _width;
 
-    public Button(int imageId, Vector2 position, int buttonWidth, int buttonHeight, string text,
-        Color textColor)
+    public Button(int imageId, Vector2 position, int buttonWidth, int buttonHeight, string text, int id, Color textColor)
     {
         ImageId = imageId;
         Position = position;
@@ -25,6 +25,7 @@ public class Button : IEntity, ISolid
         TextColor = textColor;
         _height = buttonHeight;
         _width = buttonWidth;
+        Id = id;
         
         Collider = new RectangleCollider((int)position.X, (int)position.Y, buttonWidth, buttonHeight);
     }

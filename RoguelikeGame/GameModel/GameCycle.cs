@@ -28,7 +28,7 @@ public partial class GameCycle : IGameModel
     private Vector2 _lastKnownPlayerSpeed;
     private Vector2 _currentPov = new(0,0);
     
-    private const int BasicSpeed = 4;
+    private const int BasicSpeed = 3;
 
     public void Initialize()
     {
@@ -50,9 +50,10 @@ public partial class GameCycle : IGameModel
         CreateLevel();
 
         var player = new Player(0, 
-            new Vector2(Level.InitialPos.X * Level.TileSize, Level.InitialPos.Y * Level.TileSize));
+            new Vector2(Level.InitialPos.X * Level.TileSize, Level.InitialPos.Y * Level.TileSize), _currentId);
         
         Entities.Add(_currentId, player);
+        
         Player = player;
         _currentId++;
         
@@ -63,8 +64,8 @@ public partial class GameCycle : IGameModel
     private void InitializeMenu()
     {
         var startGameButtonPosition = new Vector2(30, 515);
-        var startGameButton = new Button(7, startGameButtonPosition, 300, 40, "Start new game", Color.White);
-        var exitButton = new Button(8, startGameButtonPosition + new Vector2(0, 80), 80, 40, "Exit", Color.White);
+        var startGameButton = new Button(7, startGameButtonPosition, 300, 40, "Start new game", 0, Color.White);
+        var exitButton = new Button(8, startGameButtonPosition + new Vector2(0, 80), 80, 40, "Exit", 1, Color.White);
         
         _buttons = new Dictionary<int, IEntity>
         {
@@ -139,21 +140,21 @@ public partial class GameCycle : IGameModel
         switch (cell)
         {
             case RoomObjects.Wall:
-                Entities.Add(_currentId, new Wall(2, pos));
+                Entities.Add(_currentId, new Wall(2, pos, _currentId));
                 _currentId++;
                 break;
 
             case RoomObjects.Monster:
-                Entities.Add(_currentId, new Floor(1, pos));
+                Entities.Add(_currentId, new Floor(1, pos, _currentId));
                 _currentId++;
-                Entities.Add(_currentId, EnemyType.CreateNewEnemy(pos));
+                Entities.Add(_currentId, EnemyType.CreateNewEnemy(pos, _currentId));
                 _currentId++;
                 break;
 
             case RoomObjects.Floor:
             case RoomObjects.Player:
             case RoomObjects.Exit:
-                Entities.Add(_currentId, new Floor(1, pos));
+                Entities.Add(_currentId, new Floor(1, pos, _currentId));
                 _currentId++;
                 break;
         }
@@ -215,8 +216,9 @@ public partial class GameCycle : IGameModel
                 throw new ArgumentOutOfRangeException(nameof(attackDirection));
         }
 
-        var bullet = new Bullet(4, bulletStartPosition, deltaSpeed / 2 + attackDirection.ConvertToVector() * 6, Player.Damage);
-        Entities.Add(Entities.Keys.Max() + 1, bullet);
+        var id = Entities.Keys.Max() + 1;
+        var bullet = new Bullet(4, bulletStartPosition, deltaSpeed / 2 + attackDirection.ConvertToVector() * 6, Player.Damage, id);
+        Entities.Add(id, bullet);
         _currentId++;
     }
 }

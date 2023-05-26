@@ -10,6 +10,7 @@ namespace RoguelikeGame.Entities.Creatures;
 public class Enemy : IEnemy
 {
     public int ImageId { get; }
+    public int Id { get; }
     public int HealthPoints { get; set; }
 
     public int Damage { get; set; } = 80;
@@ -24,18 +25,19 @@ public class Enemy : IEnemy
     public Vector2 Speed { get; set; }
     public RectangleCollider Collider { get; set; }
     
-    public Enemy(int imageId, Vector2 position, EnemyType.MonsterType enemyBehaviour, int healthPoints = 500)
+    public Enemy(int imageId, Vector2 position, EnemyType.MonsterType enemyBehaviour, int id, int healthPoints = 500)
     {
         ImageId = imageId;
         HealthPoints = healthPoints;
         Position = position;
         EnemyBehaviour = enemyBehaviour;
+        Id = id;
         LastShotTime = DateTime.Now;
         
         Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
     }
     
-    public Enemy(int imageId, Vector2 position, int healthPoints, int damage, int armorPoints, EnemyType.MonsterType enemyBehaviour)
+    public Enemy(int imageId, Vector2 position, int healthPoints, int damage, int armorPoints, int id, EnemyType.MonsterType enemyBehaviour)
     {
         ImageId = imageId;
         HealthPoints = healthPoints;
@@ -43,6 +45,7 @@ public class Enemy : IEnemy
         Damage = damage;
         ArmorPoints = armorPoints;
         EnemyBehaviour = enemyBehaviour;
+        Id = id;
         LastShotTime = DateTime.Now;
         
         Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);

@@ -24,6 +24,7 @@ public class GameCycleView : Game, IGameView
     private Dictionary<int, IEntity> _entities = new();
     private GameState _currentGameState;
     private readonly Dictionary<int, Texture2D> _textures = new();
+    private readonly Dictionary<int, Animation> _animations = new(); 
     
     private readonly GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
@@ -33,6 +34,8 @@ public class GameCycleView : Game, IGameView
     private float _backgroundScaling;
     private float _deltaX;
     private bool _levelFinished = true;
+
+    private int _playerId;
     
     private Vector2 _visualShift = new(
         Level.InitialPos.X * Level.TileSize - Level.TileSize,
@@ -78,6 +81,8 @@ public class GameCycleView : Game, IGameView
     {
         _currentGameState = gameState;
         _levelFinished = levelFinished;
+        if (_currentGameState == GameState.Game)
+            LoadAnimations();
     }
 
     protected override void LoadContent()
@@ -93,8 +98,18 @@ public class GameCycleView : Game, IGameView
         _buttonFont = Content.Load<SpriteFont>("montserrat");
     }
     
-    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState)
+    private void LoadAnimations()
     {
+        _animations.Clear();
+        
+        var playerAnimation = new Animation(new Point(3, 4), 125, 50, 50);
+        playerAnimation.SetLastFrameY(0);
+        _animations.Add(_playerId, playerAnimation);
+    } 
+    
+    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState, int playerId)
+    {
+        _playerId = playerId;
         _entities = entities;
         _currentGameState = currentGameState;
         _visualShift += POVShift;
@@ -102,54 +117,91 @@ public class GameCycleView : Game, IGameView
 
     protected override void Update(GameTime gameTime)
     {
+        foreach (var animation in _animations.Values) 
+            animation.Update(gameTime);
+        
+        var directions = new List<Direction>();
+        
+        var playerAnimation = _currentGameState == GameState.Game ? _animations[_playerId] : null;
+        
+        
         var keysState = Keyboard.GetState();
-        var pressedKeys = keysState.GetPressedKeys();
+        var pressedKeys = keysState.GetPressedKeys().Reverse();
 
         CheckMenuClickableButtons();
         foreach (var key in pressedKeys)
         {
             if(_currentGameState == GameState.Game)
-                CheckInGameButtons(key);
+                CheckInGameButtons(key, directions, playerAnimation);
             else
                 CheckInMenuButtons(key);
+        }
+
+        if (playerAnimation != null)
+        {
+            if (directions.Count > 0)
+                playerAnimation.SetLastFrameY(playerAnimation.CurrentFrame.Y);
+            else
+                playerAnimation.SetCurrentFrameX(0);
         }
 
         base.Update(gameTime);
         CycleFinished!(this, EventArgs.Empty);
     }
 
-    private void CheckInGameButtons(Keys key)
+    private void CheckInGameButtons(Keys key, List<Direction> directions, Animation playerAnimation)
     {
         switch (key)
         {
             case Keys.W:
                 PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.North });
+                directions.Add(Direction.North);
+                playerAnimation?.SetCurrentFrameY(0);
+
                 break;
             case Keys.S:
                 PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.South });
+                directions.Add(Direction.South);
+                playerAnimation?.SetCurrentFrameY(2); 
+                
                 break;
             case Keys.D:
                 PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.East });
+                directions.Add(Direction.East);
+                playerAnimation?.SetCurrentFrameY(1); 
+                
                 break;
             case Keys.A:
                 PlayerMoved!(this, new ControlsEventArgs { Direction = Direction.West });
+                directions.Add(Direction.West);
+                playerAnimation?.SetCurrentFrameY(3); 
+                
                 break;
                 
+            
             case Keys.Up:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.North });
+                playerAnimation?.SetCurrentFrameY(0);
+                
                 break;
             case Keys.Right:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.East });
+                playerAnimation?.SetCurrentFrameY(1); 
+                
                 break;
             case Keys.Left:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.West });
+                playerAnimation?.SetCurrentFrameY(3);
+                
                 break;
             case Keys.Down:
                 PlayerAttacked!(this, new ControlsEventArgs { Direction = Direction.South });
+                playerAnimation?.SetCurrentFrameY(2); 
+                
                 break;
                 
             case Keys.Escape:
-                if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 150) 
+                if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 200) 
                     break;
                 
                 ChangedGameState!(this, EventArgs.Empty);
@@ -160,7 +212,8 @@ public class GameCycleView : Game, IGameView
     
     private void CheckInMenuButtons(Keys key)
     {
-        if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 150) return;
+        if ((DateTime.Now - _lastTimeExitButtonPressed).Milliseconds < 200 || _playerId == 0) 
+            return;
         
         if (key == Keys.Escape) 
             ChangedGameState!(this, EventArgs.Empty);
@@ -232,14 +285,38 @@ public class GameCycleView : Game, IGameView
 
     private void DrawEntitiesInCorrectOrder(params IEnumerable<IEntity>[] entitiesCollection)
     {
-        foreach (var collection in entitiesCollection)
-            foreach (var o in collection) 
-                DrawTexture(o.ImageId, o.Position - _visualShift);
+        foreach (var collection in entitiesCollection){
+            foreach (var entity in collection)
+            {
+                if (_animations.ContainsKey(entity.Id))
+                {
+                    var animation = _animations[entity.Id];
+
+                    var texturePosition = GetEntityPositionByWindowSize(entity.Position - _visualShift);
+                    
+                    _spriteBatch.Draw(
+                        _textures[entity.ImageId],
+                        texturePosition,
+                        new Rectangle(
+                        animation.CurrentFrame.X * animation.FrameWidth,
+                        animation.CurrentFrame.Y * animation.FrameHeight,
+                        animation.FrameWidth, animation.FrameHeight),
+                        Color.White, 
+                        0,
+                        Vector2.Zero, 
+                        _backgroundScaling, 
+                        SpriteEffects.None, 
+                        1.0F);
+                }
+                else
+                    DrawTexture(entity.ImageId, entity.Position - _visualShift);
+            }
+        }
     }
     
     private void DrawTexture(int textureId, Vector2 position)
     {
-        var texturePosition = position * _backgroundScaling + new Vector2(_deltaX, 0);
+        var texturePosition = GetEntityPositionByWindowSize(position);
 
         _spriteBatch.Draw(_textures[textureId], 
             texturePosition, 
@@ -265,5 +342,10 @@ public class GameCycleView : Game, IGameView
     private float GetDeltaX(int backgroundWidth, float scaleBackground)
     {
         return (_graphics.PreferredBackBufferWidth - backgroundWidth * scaleBackground) / 2;
+    }
+
+    private Vector2 GetEntityPositionByWindowSize(Vector2 position)
+    {
+        return position * _backgroundScaling + new Vector2(_deltaX, 0);
     }
 }

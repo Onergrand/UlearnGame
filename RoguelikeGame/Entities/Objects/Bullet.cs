@@ -7,7 +7,8 @@ namespace RoguelikeGame.Creatures.Objects;
 public class Bullet : IMissile, ISolid
 {
     public int ImageId { get; }
-    
+    public int Id { get; }
+
     public RectangleCollider Collider { get; set; }
     
     public int Damage { get; set; }
@@ -15,12 +16,13 @@ public class Bullet : IMissile, ISolid
     public Vector2 Position { get; set; }
     public Vector2 Speed { get; set; }
 
-    public Bullet(int imageId, Vector2 position, Vector2 speed, int damage)
+    public Bullet(int imageId, Vector2 position, Vector2 speed, int damage, int id)
     {
         ImageId = imageId;
         Position = position;
         Speed = speed;
         Damage = damage;
+        Id = id;
         Collider = new RectangleCollider((int)position.X, (int)position.Y, 20, 20);
     }
     
