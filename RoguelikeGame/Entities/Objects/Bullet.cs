@@ -1,8 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using RoguelikeGame.Entities;
-using RoguelikeGame.Entities.Objects;
 
-namespace RoguelikeGame.Creatures.Objects;
+namespace RoguelikeGame.Entities.Objects;
 
 public class Bullet : IMissile, ISolid
 {
@@ -14,7 +12,7 @@ public class Bullet : IMissile, ISolid
     public int Damage { get; set; }
     
     public Vector2 Position { get; set; }
-    public Vector2 Speed { get; set; }
+    private Vector2 Speed { get; }
 
     public Bullet(int imageId, Vector2 position, Vector2 speed, int damage, int id)
     {

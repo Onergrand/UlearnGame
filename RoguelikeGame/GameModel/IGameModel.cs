@@ -20,7 +20,7 @@ public interface IGameModel
     void MovePlayer(Direction direction);
     void MakePlayerAttack(Direction direction);
     void StartNewGame();
-    void UpdateMenuButtonsPositions(int height, int width);
+    void UpdateMenuButtonsPositions(int height);
     void Initialize();
 }
 

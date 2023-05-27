@@ -8,6 +8,5 @@ public interface IEntity
     int Id { get; }
     Vector2 Position { get; set; }
 
-    Vector2 Speed { get; set; }
     void Update();
 }

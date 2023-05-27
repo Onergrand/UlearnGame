@@ -15,12 +15,4 @@ public class RectangleCollider
     {
         return r1.Boundary.Intersects(r2.Boundary);
     }
-    
-    public static bool InBounds(RectangleCollider collider, Vector2 position)
-    {
-        var boundary = collider.Boundary;
-
-        return position.X > boundary.Left && position.X < boundary.Right &&
-               position.Y > boundary.Top && position.Y < boundary.Bottom;
-    }
 }

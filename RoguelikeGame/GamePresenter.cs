@@ -58,7 +58,7 @@ public class GamePresenter
     
     private void ViewModelUpdateClientParameters(object sender, ClientSizeEventArgs e)
     {
-        _gameModel.UpdateMenuButtonsPositions(e.Height, e.Width);
+        _gameModel.UpdateMenuButtonsPositions(e.Height);
     }
     
     private void ModelViewUpdateLevelState(object sender, LevelStateArgs e)

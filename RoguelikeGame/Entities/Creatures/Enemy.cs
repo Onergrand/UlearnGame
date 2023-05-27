@@ -17,13 +17,13 @@ public class Enemy : IEnemy
 
     public int ArmorPoints { get; set; } = 2;
 
-    public DateTime LastShotTime = DateTime.Now;
+    public DateTime LastShotTime;
     
     public EnemyType.MonsterType EnemyBehaviour { get; set; }
     
     public Vector2 Position { get; set; }
     public Vector2 Speed { get; set; }
-    public RectangleCollider Collider { get; set; }
+    public RectangleCollider Collider { get; private set; }
     
     public Enemy(int imageId, Vector2 position, EnemyType.MonsterType enemyBehaviour, int id, int healthPoints = 500)
     {

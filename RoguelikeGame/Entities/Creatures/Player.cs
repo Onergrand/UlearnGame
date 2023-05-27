@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using RoguelikeGame.Entities.Objects;
-using RoguelikeGame.GameModel;
 
 namespace RoguelikeGame.Entities.Creatures;
 
@@ -12,7 +11,7 @@ public class Player : ICreature
     public int HealthPoints { get; set; }
     public int Damage { get; set; } = 170;
     public int ArmorPoints { get; set; } = 4;
-    public int EnemyKilled { get; private set; }
+    public int EnemyKilled { get; set; }
 
 
     public RectangleCollider Collider { get; set; }
@@ -21,7 +20,9 @@ public class Player : ICreature
     
     public DateTime LastShotTime = DateTime.Now;
 
-
+    private int _currentTimeSpend;
+    private DateTime _lastUpdateTime = DateTime.Now;
+    private const int _updatePeriod = 500;
 
     public Player(int imageId, Vector2 position, int id, int healthPoints = 500)
     {
@@ -38,6 +39,15 @@ public class Player : ICreature
         Position += Speed;
         MoveCollider(Position);
         Speed = new Vector2(0, 0);
+        
+        
+        _currentTimeSpend += (int)(DateTime.Now - _lastUpdateTime).TotalMilliseconds;
+
+        if (_currentTimeSpend <= _updatePeriod || HealthPoints >= 500) return;
+
+        _lastUpdateTime = DateTime.Now;
+        _currentTimeSpend = 0;
+        HealthPoints += 10;
     }
     
     public void MoveCollider(Vector2 newPos)
@@ -45,7 +55,6 @@ public class Player : ICreature
         Collider = new RectangleCollider((int)Position.X, (int)Position.Y, 50, 50);
     }
 
-    public void AddKilledMonster() => EnemyKilled++;
 
     public void ApplyDamage(int damage) => HealthPoints -= (int)(damage / (0.34 * ArmorPoints));
 }

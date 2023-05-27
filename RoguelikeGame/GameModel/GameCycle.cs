@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using RoguelikeGame.Creatures.Objects;
 using RoguelikeGame.Entities;
 using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.Entities.Objects;
@@ -25,10 +24,7 @@ public partial class GameCycle : IGameModel
     private int _currentLevelNumber;
 
     private int _currentId;
-    
-    private Vector2 _lastKnownPlayerSpeed;
-    private Vector2 _currentPov = new(0,0);
-    
+
     private const int BasicSpeed = 3;
 
     public void Initialize()
@@ -36,7 +32,7 @@ public partial class GameCycle : IGameModel
         switch (_currentGameState)
         {
             case GameState.Game:
-                InitializeGame(1);
+                InitializeGame(1, 0);
                 break;
             
             case GameState.Menu:
@@ -45,40 +41,6 @@ public partial class GameCycle : IGameModel
         }
     }
 
-    private void InitializeGame(int currentLevelNumber)
-    {
-        _currentLevelNumber = currentLevelNumber;
-        Entities = new Dictionary<int, IEntity>();
-        CreateLevel(currentLevelNumber);
-
-        var player = new Player(0, 
-            new Vector2(Level.InitialPos.X * Level.TileSize, Level.InitialPos.Y * Level.TileSize), _currentId);
-        
-        Entities.Add(_currentId, player);
-        
-        Player = player;
-        _currentId++;
-        
-        UpdateGame();
-        UpdateLevelState(this, new LevelStateArgs{ LevelFinished = false, GameState = _currentGameState});
-    }
-
-    private void InitializeMenu()
-    {
-        var startGameButtonPosition = new Vector2(30, 515);
-        var startGameButton = new Button(7, startGameButtonPosition, 300, 40, "Start new game", 0, Color.White);
-        var exitButton = new Button(8, startGameButtonPosition + new Vector2(0, 80), 80, 40, "Exit", 1, Color.White);
-        
-        _buttons = new Dictionary<int, IEntity>
-        {
-            {0, startGameButton},
-            {1, exitButton}
-        };
-        
-        UpdateMenu();
-    }
-    
-    
     public void Update()
     {
         switch (_currentGameState)
@@ -95,18 +57,6 @@ public partial class GameCycle : IGameModel
         }
     }
     
-    public void UpdateMenuButtonsPositions(int height, int width)
-    {
-        var x = 30;
-        var y = height / 1.4f;
-
-        var startGameButton = _buttons[0] as Button;
-        startGameButton!.MoveCollider(new Vector2(x, y));
-
-        var exitButton = _buttons[1] as Button;
-        exitButton!.MoveCollider( new Vector2(x, y + 80));
-    }
-
     public void StartNewGame()
     {
         _currentGameState = GameState.Game;
@@ -114,55 +64,6 @@ public partial class GameCycle : IGameModel
     }
 
     public void ChangeGameState() => _currentGameState = _currentGameState.GetOppositeState();
-
-    private void CreateLevel(int currentLevelNumber)
-    {
-        var roomsAmountToAdd = currentLevelNumber / 5;
-        var level = new Level(5 + roomsAmountToAdd);
-        
-        _currentLevel = level;
-        _remainingMonstersAmount = level.MonstersCreated;
-        _currentRoom = _currentLevel.Rooms.First();
-        _currentRoom.PlayerIsOutsideRoom += ChangeCurrentRoomIfExited;
-        
-        for (var i = 0; i < level.Map.GetLength(0); i++)
-        {
-            for (var j = 0; j < level.Map.GetLength(1); j++)
-            {
-                var cell = level.Map[i, j];
-                if (cell == RoomObjects.Empty)
-                    continue;
-                
-                var pos = new Vector2(i * Level.TileSize - Level.TileSize, j * Level.TileSize - Level.TileSize);
-                FillCell(cell, pos);
-            }
-        }
-    }
-
-    private void FillCell(RoomObjects cell, Vector2 pos)
-    {
-        switch (cell)
-        {
-            case RoomObjects.Wall:
-                Entities.Add(_currentId, new Wall(2, pos, _currentId));
-                _currentId++;
-                break;
-
-            case RoomObjects.Monster:
-                Entities.Add(_currentId, new Floor(1, pos, _currentId));
-                _currentId++;
-                Entities.Add(_currentId, EnemyType.CreateNewEnemy(pos, _currentId));
-                _currentId++;
-                break;
-
-            case RoomObjects.Floor:
-            case RoomObjects.Player:
-            case RoomObjects.Exit:
-                Entities.Add(_currentId, new Floor(1, pos, _currentId));
-                _currentId++;
-                break;
-        }
-    }
 
     public void MovePlayer(Direction direction)
     {
