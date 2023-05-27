@@ -66,8 +66,8 @@ public class Room
     public bool IsPositionInRoomBounds(Vector2 position)
     {
         var room = this;
-        var topLeft = new Vector2((room.TopLeftCorner.X - 1.4f) * 50, (room.TopLeftCorner.Y - 1.4f) * 50);
-        var bottomRight = new Vector2(topLeft.X + room.Length * 56, topLeft.Y + room.Width * 56);
+        var topLeft = (new Vector2(room.TopLeftCorner.X, room.TopLeftCorner.Y) - Vector2.One) * 50 - new Vector2(2, 2);
+        var bottomRight = new Vector2(topLeft.X + room.Length * 50, topLeft.Y + room.Width * 50) + new Vector2(2, 2);
 
         if (position.X < topLeft.X || position.Y < topLeft.Y || position.X > bottomRight.X || position.Y > bottomRight.Y) 
             return false;

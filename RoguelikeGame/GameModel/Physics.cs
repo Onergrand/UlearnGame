@@ -194,6 +194,7 @@ public partial class GameCycle
         if (_remainingMonstersAmount != 0) return false;
         
         _currentPov = _cameraDeltaPosition;
+        _cameraDeltaPosition = Vector2.Zero;
         InitializeGame(_currentLevelNumber + 1);
 
         return false;

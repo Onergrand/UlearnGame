@@ -118,7 +118,7 @@ public partial class GameCycle : IGameModel
     private void CreateLevel(int currentLevelNumber)
     {
         var roomsAmountToAdd = currentLevelNumber / 5;
-        var level = new Level(5 + roomsAmountToAdd);
+        var level = new Level(3 + roomsAmountToAdd);
         
         _currentLevel = level;
         _remainingMonstersAmount = level.MonstersCreated;
