@@ -29,8 +29,8 @@ public class GameEventArgs : EventArgs
     public Dictionary<int, IEntity> Entities { get; init; }    
     public Vector2 POVShift { get; init; }
     public GameState CurrentGameState { get; init; }
-    
     public int PlayerId { get; init; }
+    public int CurrentLevelNumber { get; set; }
 }
 
 public class LevelStateArgs : EventArgs

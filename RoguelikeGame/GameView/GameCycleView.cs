@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RoguelikeGame.Entities;
+using RoguelikeGame.Entities.Creatures;
 using RoguelikeGame.Entities.Objects;
 using RoguelikeGame.GameModel.Helpers;
 using RoguelikeGame.GameModel.LevelGeneration;
@@ -36,6 +37,7 @@ public class GameCycleView : Game, IGameView
     private bool _levelFinished = true;
 
     private int _playerId;
+    private int _currentLevelNumber;
     
     private Vector2 _visualShift = new(
         Level.InitialPos.X * Level.TileSize - Level.TileSize,
@@ -95,6 +97,9 @@ public class GameCycleView : Game, IGameView
         _textures.Add(4, Content.Load<Texture2D>("playerBullet"));
         _textures.Add(5, Content.Load<Texture2D>("monsterBullet"));
         _textures.Add(6, Content.Load<Texture2D>("mainMenuBackground"));
+        _textures.Add(7, Content.Load<Texture2D>("heart"));
+        _textures.Add(8, Content.Load<Texture2D>("brokenHeart"));
+        _textures.Add(9, Content.Load<Texture2D>("skull"));
         _buttonFont = Content.Load<SpriteFont>("montserrat");
     }
     
@@ -107,12 +112,14 @@ public class GameCycleView : Game, IGameView
         _animations.Add(_playerId, playerAnimation);
     } 
     
-    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState, int playerId)
+    public void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState, 
+        int playerId, int currentLevelNumber)
     {
         _playerId = playerId;
         _entities = entities;
         _currentGameState = currentGameState;
         _visualShift += POVShift;
+        _currentLevelNumber = currentLevelNumber;
     }
 
     protected override void Update(GameTime gameTime)
@@ -279,8 +286,31 @@ public class GameCycleView : Game, IGameView
         var walls = _entities.Values.Where(x => x is Wall).ToArray();
 
         DrawEntitiesInCorrectOrder(floor, walls, _entities.Values.Except(floor).Except(walls));
-
+        DrawHUD();
+        
         _spriteBatch.End();   
+    }
+
+    private void DrawHUD()
+    {
+        if (!_entities.ContainsKey(_playerId)) return;
+        
+        var player = (Player)_entities[_playerId];
+        var playerHP = player.HealthPoints;
+        var heartsAmount = playerHP / 100;
+        var halfHeartsAmount = (int)Math.Round((playerHP - heartsAmount * 100) / 100.0);
+
+        if (heartsAmount == 0)
+            halfHeartsAmount = 1;
+        
+        for (var i = 0; i < heartsAmount + halfHeartsAmount; i++)
+        {
+            var currentX = 10 + 40 * i;
+            DrawTexture(i == heartsAmount + halfHeartsAmount - 1 && halfHeartsAmount != 0 ? 8 : 7, new Vector2(currentX, 10));
+        }
+        DrawTexture(9, new Vector2(300, 10));
+        _spriteBatch.DrawString(_buttonFont, $"x{player.EnemyKilled}", new Vector2(325 * _backgroundScaling + _deltaX, 5), Color.White);
+        _spriteBatch.DrawString(_buttonFont, $"Level:{_currentLevelNumber}", new Vector2(400 * _backgroundScaling + _deltaX, 5), Color.White);   
     }
 
     private void DrawEntitiesInCorrectOrder(params IEnumerable<IEntity>[] entitiesCollection)
@@ -289,31 +319,35 @@ public class GameCycleView : Game, IGameView
             foreach (var entity in collection)
             {
                 if (_animations.ContainsKey(entity.Id))
-                {
-                    var animation = _animations[entity.Id];
-
-                    var texturePosition = GetEntityPositionByWindowSize(entity.Position - _visualShift);
-                    
-                    _spriteBatch.Draw(
-                        _textures[entity.ImageId],
-                        texturePosition,
-                        new Rectangle(
-                        animation.CurrentFrame.X * animation.FrameWidth,
-                        animation.CurrentFrame.Y * animation.FrameHeight,
-                        animation.FrameWidth, animation.FrameHeight),
-                        Color.White, 
-                        0,
-                        Vector2.Zero, 
-                        _backgroundScaling, 
-                        SpriteEffects.None, 
-                        1.0F);
-                }
+                    DrawAnimation(entity);
                 else
                     DrawTexture(entity.ImageId, entity.Position - _visualShift);
             }
         }
     }
-    
+
+    private void DrawAnimation(IEntity entity)
+    {
+        var animation = _animations[entity.Id];
+
+        var texturePosition = GetEntityPositionByWindowSize(entity.Position - _visualShift);
+        
+
+        _spriteBatch.Draw(
+            _textures[entity.ImageId],
+            texturePosition,
+            new Rectangle(
+                animation.CurrentFrame.X * animation.FrameWidth,
+                animation.CurrentFrame.Y * animation.FrameHeight,
+                animation.FrameWidth, animation.FrameHeight),
+            Color.White,
+            0,
+            Vector2.Zero,
+            _backgroundScaling,
+            SpriteEffects.None,
+            1.0F);
+    }
+
     private void DrawTexture(int textureId, Vector2 position)
     {
         var texturePosition = GetEntityPositionByWindowSize(position);

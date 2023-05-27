@@ -31,8 +31,6 @@ public partial class GameCycle : IGameModel
     
     private const int BasicSpeed = 3;
 
-    public int LevelRoomsAmount() => _currentLevel.Rooms.Count; 
-
     public void Initialize()
     {
         switch (_currentGameState)
