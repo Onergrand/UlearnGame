@@ -21,7 +21,9 @@ public class Player : ICreature
     
     public DateTime LastShotTime = DateTime.Now;
 
-
+    private int _currentTimeSpend;
+    private DateTime _lastUpdateTime = DateTime.Now;
+    private const int _updatePeriod = 500;
 
     public Player(int imageId, Vector2 position, int id, int healthPoints = 500)
     {
@@ -38,6 +40,15 @@ public class Player : ICreature
         Position += Speed;
         MoveCollider(Position);
         Speed = new Vector2(0, 0);
+        
+        
+        _currentTimeSpend += (int)(DateTime.Now - _lastUpdateTime).TotalMilliseconds;
+
+        if (_currentTimeSpend <= _updatePeriod || HealthPoints >= 500) return;
+
+        _lastUpdateTime = DateTime.Now;
+        _currentTimeSpend = 0;
+        HealthPoints += 10;
     }
     
     public void MoveCollider(Vector2 newPos)
