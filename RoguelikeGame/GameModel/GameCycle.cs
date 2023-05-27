@@ -36,7 +36,7 @@ public partial class GameCycle : IGameModel
         switch (_currentGameState)
         {
             case GameState.Game:
-                InitializeGame(1);
+                InitializeGame(1, 0);
                 break;
             
             case GameState.Menu:
@@ -45,7 +45,7 @@ public partial class GameCycle : IGameModel
         }
     }
 
-    private void InitializeGame(int currentLevelNumber)
+    private void InitializeGame(int currentLevelNumber, int enemyKilled)
     {
         _currentLevelNumber = currentLevelNumber;
         Entities = new Dictionary<int, IEntity>();
@@ -54,6 +54,7 @@ public partial class GameCycle : IGameModel
         var player = new Player(0, 
             new Vector2(Level.InitialPos.X * Level.TileSize, Level.InitialPos.Y * Level.TileSize), _currentId);
         
+        player.EnemyKilled += enemyKilled;
         Entities.Add(_currentId, player);
         
         Player = player;

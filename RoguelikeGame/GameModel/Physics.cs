@@ -180,7 +180,7 @@ public partial class GameCycle
         
         Entities.Remove(entityId);
         _remainingMonstersAmount--;
-        Player.AddKilledMonster();
+        Player.EnemyKilled++;
 
 
         if (creature is Player)
@@ -195,7 +195,7 @@ public partial class GameCycle
         
         _currentPov = _cameraDeltaPosition;
         _cameraDeltaPosition = Vector2.Zero;
-        InitializeGame(_currentLevelNumber + 1);
+        InitializeGame(_currentLevelNumber + 1, Player.EnemyKilled);
 
         return false;
     }
