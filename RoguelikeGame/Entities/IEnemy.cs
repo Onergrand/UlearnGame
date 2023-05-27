@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using RoguelikeGame.Entities.Creatures;
 
-namespace RoguelikeGame.Entities.Creatures;
+namespace RoguelikeGame.Entities;
 
 public interface IEnemy : ICreature
 {

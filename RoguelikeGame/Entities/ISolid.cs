@@ -5,7 +5,7 @@ namespace RoguelikeGame.Entities;
 
 public interface ISolid
 {
-    RectangleCollider Collider { get; set; }
+    RectangleCollider Collider { get; }
     
     void MoveCollider(Vector2 newPos);
 }

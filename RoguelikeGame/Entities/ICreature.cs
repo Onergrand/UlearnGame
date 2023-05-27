@@ -1,10 +1,8 @@
-﻿using RoguelikeGame.Creatures;
-
-namespace RoguelikeGame.Entities.Creatures;
+﻿namespace RoguelikeGame.Entities;
 
 public interface ICreature : IEntity, ISolid
 {
-    int HealthPoints { get; set; }
+    int HealthPoints { get; }
     int Damage { get; set; }
     int ArmorPoints { get; set; }
 

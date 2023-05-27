@@ -29,5 +29,4 @@ public class ControlsEventArgs : EventArgs
 public class ClientSizeEventArgs : EventArgs
 {
     public int Height { get; init; }
-    public int Width { get; init; }
 }

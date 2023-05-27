@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using RoguelikeGame.Entities.Objects;
-using RoguelikeGame.GameModel;
 
 namespace RoguelikeGame.Entities.Creatures;
 

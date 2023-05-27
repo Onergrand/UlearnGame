@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using RoguelikeGame.Creatures.Objects;
-using RoguelikeGame.GameModel;
+using RoguelikeGame.Entities.Objects;
 using RoguelikeGame.GameModel.Helpers;
 
 namespace RoguelikeGame.Entities.Creatures;
 
 
-public class EnemyType
+public static class EnemyType
 {
     public enum MonsterType
     {
