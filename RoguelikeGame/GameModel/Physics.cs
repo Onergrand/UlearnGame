@@ -54,7 +54,8 @@ public partial class GameCycle
             Entities = _buttons,
             POVShift = _cameraDeltaPosition,
             CurrentGameState = _currentGameState,
-            PlayerId = Player?.Id ?? 0
+            PlayerId = Player?.Id ?? 0,
+            CurrentLevelNumber = _currentLevelNumber
         });
         
         _cameraDeltaPosition = Vector2.Zero;
@@ -89,7 +90,8 @@ public partial class GameCycle
             Entities = currentEntities,
             POVShift = playerShift,
             CurrentGameState = _currentGameState,
-            PlayerId = Player.Id
+            PlayerId = Player.Id,
+            CurrentLevelNumber = _currentLevelNumber
         });
     }
     
@@ -178,6 +180,7 @@ public partial class GameCycle
         
         Entities.Remove(entityId);
         _remainingMonstersAmount--;
+        Player.AddKilledMonster();
 
 
         if (creature is Player)

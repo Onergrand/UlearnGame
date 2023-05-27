@@ -16,7 +16,8 @@ public interface IGameView
     event EventHandler<ClientSizeEventArgs> ClientSizeChanged;
 
     void Run();
-    void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState, int playerId);
+    void LoadGameCycleParameters(Dictionary<int, IEntity> entities, Vector2 POVShift, GameState currentGameState,
+        int playerId, int currentLevelNumber);
     void UpdateLevelState(bool levelFinished, GameState gameState);
 }
 
