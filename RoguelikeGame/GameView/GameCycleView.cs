@@ -34,7 +34,6 @@ public partial class GameCycleView : Game, IGameView
 
     private float _backgroundScaling;
     private float _deltaX;
-    private bool _levelFinished = true;
 
     private int _playerId;
     private int _currentLevelNumber;
@@ -78,7 +77,6 @@ public partial class GameCycleView : Game, IGameView
     public void UpdateLevelState(bool levelFinished, GameState gameState)
     {
         _currentGameState = gameState;
-        _levelFinished = levelFinished;
         if (_currentGameState == GameState.Game)
             LoadAnimations();
     }
