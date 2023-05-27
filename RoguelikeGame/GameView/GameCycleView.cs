@@ -236,7 +236,7 @@ public class GameCycleView : Game, IGameView
         
         if (buttons[1].IsClicked())
             Environment.Exit(0);
-        else if (buttons[0].IsClicked() && _levelFinished)
+        else if (buttons[0].IsClicked())
         {
             StartNewGame!(this, EventArgs.Empty);
             buttons[0].Clicked();
@@ -309,8 +309,11 @@ public class GameCycleView : Game, IGameView
             DrawTexture(i == heartsAmount + halfHeartsAmount - 1 && halfHeartsAmount != 0 ? 8 : 7, new Vector2(currentX, 10));
         }
         DrawTexture(9, new Vector2(300, 10));
-        _spriteBatch.DrawString(_buttonFont, $"x{player.EnemyKilled}", new Vector2(325 * _backgroundScaling + _deltaX, 5), Color.White);
-        _spriteBatch.DrawString(_buttonFont, $"Level:{_currentLevelNumber}", new Vector2(400 * _backgroundScaling + _deltaX, 5), Color.White);   
+        
+        _spriteBatch.DrawString(_buttonFont, $"x{player.EnemyKilled}",
+            new Vector2(325 * _backgroundScaling + _deltaX, 5), Color.White);
+        _spriteBatch.DrawString(_buttonFont, $"Level:{_currentLevelNumber}",
+            new Vector2(400 * _backgroundScaling + _deltaX, 5), Color.White);   
     }
 
     private void DrawEntitiesInCorrectOrder(params IEnumerable<IEntity>[] entitiesCollection)
